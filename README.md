@@ -1,36 +1,23 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Signals & Systems — CSE 219 study site
 
-## Getting Started
+Topic-wise notes and worked solutions to past term-final questions.
 
-First, run the development server:
+## Run
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000 (the preview config in `../.claude/launch.json` uses port 3219).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Where things live
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `src/content/topics.ts` — the 12 topics, in slide order
+- `src/content/notes/` — the "Learn" notes for each topic (Markdown + LaTeX)
+- `src/content/questions/` — past questions and solutions, tagged by topic
+- `src/components/practice-list.tsx` — question list, hidden solutions, "mark solved" progress (saved in the browser)
 
-## Learn More
+To add a question, append an object to one of the files in `src/content/questions/`. Use `$…$` and `$$…$$` for math.
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Stack: Next.js + Tailwind + shadcn, with Magic UI's Blur Fade and Dot Pattern. Fonts: Outfit (headings), Inter (body), KaTeX (math).
