@@ -220,7 +220,7 @@ export function Graph({ x, y, items, xTicks, yTicks, xLabel = "t", yLabel, width
             return (
               <g key={i}>
                 {it.pts.map(([a, b]) => (
-                  <circle key={`${a},${b}`} cx={sx(a)} cy={sy(b)} r={3.4} className={it.hollow ? `fill-background ${stroke[tone]}` : fill[tone]} strokeWidth={1.5} />
+                  <circle key={`${a},${b}`} cx={sx(a)} cy={sy(b)} r={3.4} className={it.hollow ? `fill-card ${stroke[tone]}` : fill[tone]} strokeWidth={1.5} />
                 ))}
               </g>
             )
@@ -367,7 +367,7 @@ export function Plane({ kind, range = 3, poles = [], zeros = [], roc, ring, tick
       })}
 
       {zeros.map(([a, b]) => (
-        <circle key={`z${a},${b}`} cx={sc(a)} cy={sy(b)} r={5} className="fill-background stroke-foreground/85" strokeWidth={1.6} />
+        <circle key={`z${a},${b}`} cx={sc(a)} cy={sy(b)} r={5} className="fill-card stroke-foreground/85" strokeWidth={1.6} />
       ))}
       {poles.map(([a, b]) => (
         <g key={`p${a},${b}`} className="stroke-figure-2" strokeWidth={2} strokeLinecap="round">
@@ -435,7 +435,7 @@ export function Blocks({ width, height, nodes, wires }: { width: number; height:
           case "box":
             return (
               <g key={n.id}>
-                <rect x={n.x - w / 2} y={n.y - h / 2} width={w} height={h} rx={7} className="fill-background stroke-foreground/60" strokeWidth={1.2} />
+                <rect x={n.x - w / 2} y={n.y - h / 2} width={w} height={h} rx={7} className="fill-card stroke-foreground/60" strokeWidth={1.2} />
                 <text x={n.x} y={n.y + (n.sub ? -1 : 4.5)} textAnchor="middle" className="fill-foreground text-[12.5px]">
                   {n.label}
                 </text>
@@ -450,7 +450,7 @@ export function Blocks({ width, height, nodes, wires }: { width: number; height:
           case "mult":
             return (
               <g key={n.id}>
-                <circle cx={n.x} cy={n.y} r={12} className="fill-background stroke-foreground/60" strokeWidth={1.2} />
+                <circle cx={n.x} cy={n.y} r={12} className="fill-card stroke-foreground/60" strokeWidth={1.2} />
                 <text x={n.x} y={n.y + 5} textAnchor="middle" className="fill-foreground text-[15px]">
                   {n.shape === "sum" ? "+" : "×"}
                 </text>

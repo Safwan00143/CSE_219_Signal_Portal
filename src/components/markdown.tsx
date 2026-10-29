@@ -5,6 +5,7 @@ import rehypeKatex from "rehype-katex"
 import { slugify } from "@/content/notes"
 import { figures } from "@/figures"
 import { FigureFrame } from "@/figures/figure"
+import { stepEquations } from "@/lib/math-steps"
 import { cn } from "@/lib/utils"
 
 function textOf(node: React.ReactNode): string {
@@ -58,7 +59,7 @@ export function Markdown({ children, className }: { children: string; className?
         rehypePlugins={[[rehypeKatex, { strict: false, throwOnError: false }]]}
         components={components}
       >
-        {children}
+        {stepEquations(children)}
       </ReactMarkdown>
     </div>
   )

@@ -39,24 +39,24 @@
   different strengths, so the page stays quiet and the accent means "act here".
 */
 :root {
-  --background: #f8f7f4;
+  --background: #fcf5e8;
   --foreground: #1d2220;
-  --card: #ffffff;
+  --card: #fffbf3;
   --card-foreground: #1d2220;
-  --popover: #ffffff;
+  --popover: #fffbf3;
   --popover-foreground: #1d2220;
   --primary: #2f6b5f;
-  --primary-foreground: #f8f7f4;
-  --secondary: #efede8;
+  --primary-foreground: #fcf5e8;
+  --secondary: #f3eadb;
   --secondary-foreground: #1d2220;
-  --muted: #efede8;
+  --muted: #f3eadb;
   --muted-foreground: #65706b;
   --accent: #e5eeea;
   --accent-foreground: #24564c;
-  --subtle: #f1f0ec;
+  --subtle: #f6eee0;
   --destructive: #b4483c;
-  --border: #e3e0d9;
-  --input: #dcd9d1;
+  --border: #e6dac6;
+  --input: #ddd0ba;
   --ring: #2f6b5f;
   --figure-2: #b5773a;
   --radius: 0.625rem;
@@ -111,10 +111,14 @@
 /* ───────────── Long-form text: notes, questions, solutions ───────────── */
 
 .prose-study {
-  @apply text-[15.5px] leading-[1.75] text-foreground/90;
+  @apply text-[17px] leading-[1.85] text-foreground/90;
 }
 .prose-study > * + * {
-  margin-top: 1rem;
+  margin-top: 1.25rem;
+}
+/* A paragraph that opens with a bold label ("Case 1", "(a)", "Step 2") starts a new step: give it room. */
+.prose-study > p:has(> strong:first-child) {
+  margin-top: 2rem;
 }
 /* Top-level "# Part …" lines divide a long lesson into parts. */
 .prose-study h1 {
@@ -161,7 +165,11 @@
   list-style: decimal;
 }
 .prose-study li + li {
-  margin-top: 0.35rem;
+  margin-top: 0.7rem;
+}
+.prose-study li > p + p,
+.prose-study li > .katex-display {
+  margin-top: 0.6rem;
 }
 .prose-study li::marker {
   @apply text-muted-foreground;
@@ -183,7 +191,7 @@
   -webkit-overflow-scrolling: touch;
 }
 .prose-study table {
-  @apply w-full text-[14.5px];
+  @apply w-full text-[15.5px];
   border-collapse: collapse;
 }
 .prose-study th {
@@ -192,7 +200,7 @@
   letter-spacing: 0.01em;
 }
 .prose-study td {
-  @apply border-b border-border py-2.5 pr-4 align-top;
+  @apply border-b border-border py-3 pr-5 align-top;
 }
 .prose-study tr:last-child td {
   border-bottom: 0;
@@ -211,8 +219,8 @@
 .prose-study .katex-display {
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 0.25rem 0;
-  margin: 1.1rem 0;
+  padding: 0.5rem 0;
+  margin: 1.75rem 0;
 }
 .prose-study .katex-display > .katex {
   font-size: 1.08em;
@@ -220,7 +228,7 @@
 
 /* Prompts read slightly larger than solutions: they are what you study first. */
 .prose-prompt {
-  @apply text-base leading-[1.75] text-foreground;
+  @apply text-[17.5px] leading-[1.85] text-foreground;
 }
 
 /* Indeterminate top progress bar used while a page loads. */

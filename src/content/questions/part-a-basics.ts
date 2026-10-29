@@ -1,6 +1,7 @@
 import type { Question } from "../types"
 
 const r = String.raw
+const fig = (...ids: string[]) => "\n```fig\n" + ids.join("\n") + "\n```\n"
 
 export const basicsQuestions: Question[] = [
   // ───────────────────────── Signals and their properties ─────────────────────────
@@ -220,14 +221,31 @@ Check: $x[n+63]=2\cos\!\left(\tfrac{16\pi n}{63}+16\pi+\tfrac\pi3\right)=x[n]$, 
     label: "Q1(b)",
     marks: 10,
     prompt: r`Can we foretell the future events of a signal from its past samples? Justify.`,
-    solution: r`It depends on whether the signal is **deterministic** or **random**.
+    solution: r`**Short answer:** it depends on what kind of signal it is.
 
-- **Deterministic signals** are described completely by a known formula, such as $A\cos(\omega_0 t+\phi)$ or $e^{-at}u(t)$. A few past values fix the unknown parameters ($A,\omega_0,\phi$), and then every future value follows. So yes: the future is predictable.
-- **Random (stochastic) signals**, such as speech, noise or data streams, have no formula. Their future value is known only in a probabilistic sense. Past samples let us *estimate* the next one (for example a linear predictor, as in DPCM), but there is always an error that cannot be predicted.
+**1. Deterministic signals: yes.**
 
-**The key point for communication.** If the future of a signal could be foretold exactly, the receiver would learn nothing new from it, so it would carry **no information**. Every information-bearing signal must be at least partly unpredictable. We can predict *partially*, which is how predictive coders save bits, but never *completely*.
+- They follow a known formula, such as $A\cos(\omega_0 t+\phi)$ or $e^{-at}u(t)$.
+- A few past values are enough to find the unknown numbers ($A$, $\omega_0$, $\phi$).
+- After that, every future value follows from the formula.
 
-A theoretical aside: a strictly band-limited signal is analytic, so knowing it exactly over any interval fixes it everywhere. Real signals are only approximately band-limited and always noisy, so this does not allow practical prediction.`,
+**2. Random signals: only partly.**
+
+- Speech, noise and data streams have no formula.
+- Their future is known only as a probability.
+- Past samples let us **estimate** the next one. A linear predictor does exactly this, as in DPCM.
+- But there is always some error left that cannot be predicted.
+
+**3. The key point for communication.**
+
+1. Suppose we could foretell a signal's future exactly.
+2. Then the receiver would learn nothing new from it.
+3. So it would carry **no information**.
+4. Every useful, information-carrying signal must therefore be at least partly unpredictable.
+
+We can predict **partly** (that is how predictive coders save bits), but never **completely**.
+
+**A side note.** In theory, a perfectly band-limited signal is fixed everywhere by its exact values over any short interval. Real signals are only roughly band-limited and always noisy, so this does not allow prediction in practice.`,
   },
 
   // ───────────────────────── Unit step, impulse ─────────────────────────
@@ -338,53 +356,87 @@ $$
 $$
 h[n]=\left(\tfrac14\right)^n u[n+3]
 $$`,
-    solution: r`**Strategy.** Use linearity, $y=y_1+y_2$ with $y_1=3^nu[-n-1]*h$ and $y_2=(\tfrac13)^nu[n]*h$. Use time invariance to handle the shifted step in $h$:
+    solution: r`**Step 1: write the convolution sum.**
 
 $$
-h[n]=\left(\tfrac14\right)^{n}u[n+3]=\left(\tfrac14\right)^{-3}\left(\tfrac14\right)^{n+3}u[n+3]=64\,g[n+3],\qquad g[n]=\left(\tfrac14\right)^n u[n].
+y[n]=\sum_{k=-\infty}^{\infty}x[k]\,h[n-k]
 $$
 
-So $x*h=64\,(x*g)[n+3]$. It is enough to convolve with $g$ and then shift left by 3 and scale by 64.
+Keep $x[k]$ fixed. Flip $h$ and slide it to $n$.
 
-**Part 1 — the right-sided part.** For two causal exponentials,
+**Step 2: where is each signal non-zero?**
 
-$$
-\left(\tfrac13\right)^n u[n]*\left(\tfrac14\right)^n u[n]=\sum_{k=0}^{n}\left(\tfrac13\right)^k\left(\tfrac14\right)^{n-k}=\frac{(\tfrac13)^{n+1}-(\tfrac14)^{n+1}}{\tfrac13-\tfrac14}u[n]=12\Big[(\tfrac13)^{n+1}-(\tfrac14)^{n+1}\Big]u[n].
-$$
-
-Shift and scale:
+- $x[k]$ has two pieces: $3^k$ for $k\le-1$ (left part) and $\left(\tfrac13\right)^k$ for $k\ge0$ (right part).
+- $h[n-k]=\left(\tfrac14\right)^{n-k}u[n-k+3]$ is non-zero when $n-k+3\ge0$, that is when
 
 $$
-y_2[n]=768\Big[(\tfrac13)^{n+4}-(\tfrac14)^{n+4}\Big]u[n+3]=\Big[\tfrac{256}{27}(\tfrac13)^n-3(\tfrac14)^n\Big]u[n+3].
+k\le n+3
 $$
 
-**Part 2 — the left-sided part.** Let $w[n]=3^nu[-n-1]*g[n]=\sum_k 3^k(\tfrac14)^{n-k}$. The sum runs over $k\le-1$ and $k\le n$.
+So the flipped $h$ covers everything to the **left** of its edge at $k=n+3$.
 
-- **$n\le -1$:** the upper limit is $k=n$:
-$$w[n]=(\tfrac14)^n\sum_{k=-\infty}^{n}12^k=(\tfrac14)^n\,\frac{12^n}{1-\frac1{12}}=\tfrac{12}{11}\,3^n .$$
-- **$n\ge 0$:** the upper limit is $k=-1$:
-$$w[n]=(\tfrac14)^n\sum_{k=-\infty}^{-1}12^k=(\tfrac14)^n\cdot\tfrac{1}{11}.$$
+**Step 3: find the cases.** The picture changes when the edge $k=n+3$ crosses $k=0$, where $x$ switches formula. That gives two cases:
 
-So $w[n]=\tfrac{12}{11}3^nu[-n-1]+\tfrac1{11}(\tfrac14)^nu[n]$. Then $y_1[n]=64\,w[n+3]$:
+- the edge is left of 0: $n+3\le-1$, so $n\le-4$;
+- the edge is at 0 or right of it: $n\ge-3$.
 
-$$
-y_1[n]=\frac{20736}{11}\,3^n\,u[-n-4]+\frac1{11}\left(\tfrac14\right)^n u[n+3].
-$$
-
-**Result.** Combine the $(\tfrac14)^n$ terms ($-3+\tfrac1{11}=-\tfrac{32}{11}$):
+**Case 1: $n\le-4$.**
+` + fig("cc-8a-a") + r`
+The edge is inside the left part, so only $3^k$ overlaps, for $k\le n+3$:
 
 $$
-\boxed{\,y[n]=\frac{20736}{11}\,3^{n}\,u[-n-4]+\left[\frac{256}{27}\left(\tfrac13\right)^{n}-\frac{32}{11}\left(\tfrac14\right)^{n}\right]u[n+3]\,}
+y[n]=\sum_{k=-\infty}^{n+3}3^k\left(\tfrac14\right)^{n-k}
 $$
 
-**Spot check at $n=-3$.** Directly, $y[-3]=\sum_k x[k]h[-3-k]$ needs $k\le 0$:
+Take $\left(\tfrac14\right)^n$ outside, and combine $3^k\cdot4^k=12^k$:
 
-- the $k=0$ term gives $1\cdot 4^{3}=64$;
-- the terms $k\le -1$ give $\sum_{k\le-1}3^k4^{3+k}=64/11$.
+$$
+y[n]=\left(\tfrac14\right)^n\sum_{k=-\infty}^{n+3}12^k
+$$
 
-Total $64+64/11=768/11$. The formula gives $\tfrac{256}{27}\cdot27-\tfrac{32}{11}\cdot64=256-\tfrac{2048}{11}=\tfrac{768}{11}$. ✓
+A geometric series that runs to the left: $\displaystyle\sum_{k=-\infty}^{m}a^k=\frac{a^m}{1-\frac1a}$ for $a>1$. With $a=12$ and $m=n+3$:
 
-*Alternative:* use z-transforms. $Y(z)=X(z)H(z)$ with ROC $\tfrac13<|z|<3$, then partial fractions.`,
+$$
+y[n]=\left(\tfrac14\right)^n\cdot\frac{12^{n+3}}{1-\frac1{12}}=\left(\tfrac14\right)^n\cdot12^n\cdot1728\cdot\frac{12}{11}=\frac{20736}{11}\,3^n
+$$
+
+**Case 2: $n\ge-3$.**
+` + fig("cc-8a-b") + r`
+Now the overlap has two parts. Add them separately.
+
+*Left part* ($k\le-1$, all of it):
+
+$$
+\sum_{k=-\infty}^{-1}3^k\left(\tfrac14\right)^{n-k}=\left(\tfrac14\right)^n\sum_{k=-\infty}^{-1}12^k=\left(\tfrac14\right)^n\cdot\frac{1}{11}
+$$
+
+*Right part* ($0\le k\le n+3$):
+
+$$
+\sum_{k=0}^{n+3}\left(\tfrac13\right)^k\left(\tfrac14\right)^{n-k}=\left(\tfrac14\right)^n\sum_{k=0}^{n+3}\left(\tfrac43\right)^k
+$$
+
+A finite geometric series, $\displaystyle\sum_{k=0}^{m}a^k=\frac{a^{m+1}-1}{a-1}$, with $a=\frac43$ and $m=n+3$:
+
+$$
+\left(\tfrac14\right)^n\cdot\frac{\left(\frac43\right)^{n+4}-1}{\frac13}=3\left(\tfrac14\right)^n\left(\tfrac43\right)^{n+4}-3\left(\tfrac14\right)^n=\frac{256}{27}\left(\tfrac13\right)^n-3\left(\tfrac14\right)^n
+$$
+
+*Add the two parts.* The $\left(\tfrac14\right)^n$ terms combine: $\frac1{11}-3=-\frac{32}{11}$.
+
+$$
+y[n]=\frac{256}{27}\left(\tfrac13\right)^n-\frac{32}{11}\left(\tfrac14\right)^n
+$$
+
+**Answer.**
+
+$$
+\boxed{\,y[n]=\begin{cases}\dfrac{20736}{11}\,3^{n}, & n\le-4\\[10pt]\dfrac{256}{27}\left(\tfrac13\right)^{n}-\dfrac{32}{11}\left(\tfrac14\right)^{n}, & n\ge-3\end{cases}}
+$$
+` + fig("q-219-8a") + r`
+**Quick check at $n=-3$.** Case 2 gives $\frac{256}{27}\cdot27-\frac{32}{11}\cdot64=256-\frac{2048}{11}=\frac{768}{11}$. Case 1 at $n=-4$ gives $\frac{20736}{11}\cdot\frac{1}{81}=\frac{256}{11}$, which is smaller, as the picture of $y[n]$ shows. ✓
+
+*Another way:* use z-transforms, $Y(z)=X(z)H(z)$ with ROC $\tfrac13<|z|<3$, then partial fractions.`,
   },
   {
     id: "311-2223-2a",

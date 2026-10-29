@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { useRoute } from "@/lib/use-route"
 import { ThemeToggle } from "./theme-toggle"
 import { cn } from "@/lib/utils"
 
@@ -31,7 +31,7 @@ export function Wordmark() {
 }
 
 export function SiteHeader() {
-  const pathname = usePathname()
+  const pathname = useRoute()
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">

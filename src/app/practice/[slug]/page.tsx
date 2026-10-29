@@ -6,9 +6,12 @@ import { PracticeList, type PracticeItem } from "@/components/practice-list"
 import { PracticeTabs } from "@/components/practice-tabs"
 import { PracticeBody } from "@/components/practice-body"
 import { TopicNav } from "@/components/topic-nav"
+import { SidebarShell } from "@/components/sidebar-shell"
 import { questionsFor } from "@/content/questions"
 import { bookProblemsFor, bookTitles } from "@/content/book"
+import { sheetProblemsFor } from "@/content/sheets"
 import { getTopic, topics } from "@/content/topics"
+import { toHref } from "@/lib/static-path"
 
 export function generateStaticParams() {
   return topics.map((t) => ({ slug: t.slug }))
@@ -35,7 +38,7 @@ export default async function PracticeTopic({ params }: { params: Promise<{ slug
     alsoAsked: q.alsoAsked,
     note: q.note,
     prompt: <PracticeBody text={q.prompt} plots={q.promptPlots} figs={q.promptFigs} className="prose-prompt" />,
-    solutionUrl: `/practice/${topic.slug}/solution/${q.id}`,
+    solutionUrl: toHref(`/practice/${topic.slug}/solution/${q.id}`),
   }))
 
   const bookItems: PracticeItem[] = bookProblemsFor(topic.slug).map((p) => ({
@@ -44,18 +47,22 @@ export default async function PracticeTopic({ params }: { params: Promise<{ slug
     primary: p.book === "Oppenheim",
     meta: [p.ref],
     prompt: <PracticeBody text={p.prompt} figs={p.promptFigs} className="prose-prompt" />,
-    solutionUrl: `/practice/${topic.slug}/solution/${p.id}`,
+    solutionUrl: toHref(`/practice/${topic.slug}/solution/${p.id}`),
   }))
+  const sheetItems: PracticeItem[] = sheetProblemsFor(topic.slug).map((p) => ({
+    id: p.id,
+    group: p.sheet,
+    primary: true,
+    meta: [p.ref, ...(p.title ? [p.title] : [])],
+    prompt: <PracticeBody text={p.prompt} figs={p.promptFigs} className="prose-prompt" />,
+    solutionUrl: toHref(`/practice/${topic.slug}/solution/${p.id}`),
+  }))
+
   const booksUsed = [...new Set(bookProblemsFor(topic.slug).map((p) => p.book))]
 
   return (
-    <div className="mx-auto max-w-6xl px-4 pt-10 sm:px-6 lg:pt-14">
-      <div className="lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-14">
-        <aside>
-          <TopicNav base="/practice" />
-        </aside>
-
-        <div className="min-w-0 max-w-[50rem]">
+    <SidebarShell left={<TopicNav base="/practice" />}>
+        <div className="max-w-[50rem] lg:group-data-[left=closed]/shell:max-w-none">
           <header className="mb-10">
             <p className="text-[13px] text-muted-foreground">
               <span className="tabular-nums text-primary">Practice · Topic {String(i + 1).padStart(2, "0")}</span>
@@ -86,6 +93,24 @@ export default async function PracticeTopic({ params }: { params: Promise<{ slug
                     <p className="border-t border-border py-10 text-muted-foreground">
                       No past term-final question targets this topic directly yet. Its ideas show up inside the
                       questions on neighbouring topics.
+                    </p>
+                  ),
+              },
+              {
+                id: "class",
+                label: "Class practice",
+                count: sheetItems.length,
+                content:
+                  sheetItems.length > 0 ? (
+                    <>
+                      <p className="mb-6 text-[13.5px] leading-relaxed text-muted-foreground">
+                        Practice problems from your teachers’ own sheets, with their worked solutions.
+                      </p>
+                      <PracticeList items={sheetItems} filterLabel="Filter by sheet" />
+                    </>
+                  ) : (
+                    <p className="border-t border-border py-10 text-muted-foreground">
+                      The practice sheets have no problems on this topic. Try the other tabs.
                     </p>
                   ),
               },
@@ -129,8 +154,7 @@ export default async function PracticeTopic({ params }: { params: Promise<{ slug
             </div>
           </nav>
         </div>
-      </div>
-    </div>
+    </SidebarShell>
   )
 }
 

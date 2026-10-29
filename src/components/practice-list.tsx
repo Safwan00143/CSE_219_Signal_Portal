@@ -26,7 +26,8 @@ const solutionCache = new Map<string, Promise<string>>()
 function loadSolution(url: string) {
   let p = solutionCache.get(url)
   if (!p) {
-    p = fetch(url).then((r) => {
+    // Revalidate so an edited solution never shows a stale copy; unchanged pages come back as a quick 304.
+    p = fetch(url, { cache: "no-cache" }).then((r) => {
       if (!r.ok) throw new Error(String(r.status))
       return r.text()
     }).then((page) => {
@@ -74,7 +75,7 @@ export function PracticeList({ items, filterLabel }: { items: PracticeItem[]; fi
         <Progress done={done} total={items.length} />
       </div>
 
-      <ol>
+      <ol className="mt-6">
         {shown.map((item, i) => (
           <QuestionRow key={item.id} item={item} index={i + 1} solved={solved.has(item.id)} />
         ))}
@@ -114,7 +115,7 @@ function QuestionRow({ item, index, solved }: { item: PracticeItem; index: numbe
   }
 
   return (
-    <li id={item.id} className="scroll-mt-24 border-b border-border py-10 last:border-b-0">
+    <li id={item.id} className="mb-5 scroll-mt-24 rounded-xl border border-border bg-card px-5 py-8 sm:px-8">
       <div className="grid gap-x-8 gap-y-4 md:grid-cols-[3.5rem_minmax(0,1fr)]">
         <div className="flex items-baseline gap-3 md:block">
           <span className="font-heading text-2xl font-light tabular-nums text-muted-foreground/70">

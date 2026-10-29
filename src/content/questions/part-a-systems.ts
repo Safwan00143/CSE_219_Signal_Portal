@@ -1,6 +1,7 @@
 import type { Question } from "../types"
 
 const r = String.raw
+const fig = (...ids: string[]) => "\n```fig\n" + ids.join("\n") + "\n```\n"
 
 export const systemsQuestions: Question[] = [
   {
@@ -12,33 +13,58 @@ export const systemsQuestions: Question[] = [
     marks: 15,
     prompt: r`Explain the differences between a distortionless system and an all-pass system. How will you determine that a system is distortionless?`,
     alsoAsked: ["CSE 311 · 2018-19 Q1(b)"],
-    solution: r`**Distortionless system.** The output is a scaled, delayed replica of the input:
+    solution: r`**1. Distortionless system.**
+
+The output is a scaled, delayed copy of the input:
 
 $$
-y(t)=k\,g(t-t_d)\ \Longrightarrow\ H(f)=k\,e^{-j2\pi ft_d}.
+y(t)=k\,g(t-t_d)
 $$
 
-So it has **both**:
+Taking Fourier transforms gives
 
-1. a **constant magnitude** $|H(f)|=k$, so every frequency gets the same gain;
-2. a **linear phase through the origin**, $\theta(f)=-2\pi ft_d$, so every frequency gets the same delay $t_d$.
+$$
+H(f)=k\,e^{-j2\pi ft_d}
+$$
 
-**All-pass system.** Only $|H(f)|=$ constant is required. The phase can be anything, e.g. $H(s)=\frac{s-a}{s+a}$, which has $|H(j\omega)|=1$ but phase $\pi-2\tan^{-1}(\omega/a)$, which is not linear.
+So it needs **both**:
+
+- **constant gain**, $|H(f)|=k$: every frequency is scaled the same;
+- **linear phase through the origin**, $\theta(f)=-2\pi ft_d$: every frequency is delayed the same.
+` + fig("fr-distortionless") + r`
+**2. All-pass system.**
+
+It needs **only** constant gain, $|H(f)|=$ constant. The phase can be anything.
+
+*Example:*
+
+$$
+H(s)=\frac{s-a}{s+a}
+$$
+
+- Its gain is $|H(j\omega)|=1$ at every frequency.
+- Its phase is $\pi-2\tan^{-1}(\omega/a)$, which is **not** a straight line.
+` + fig("fr-allpass") + r`
+**3. The difference, side by side.**
 
 | | distortionless | all-pass |
 |---|---|---|
-| magnitude | constant | constant |
-| phase | linear, $-2\pi f t_d$ | arbitrary |
-| output shape | preserved | can change (phase distortion) |
+| gain | constant | constant |
+| phase | straight line, $-2\pi f t_d$ | anything |
+| output shape | kept | may change |
 
-So **every distortionless system is all-pass, but an all-pass system is distortionless only if its phase is also linear**. An all-pass system with non-linear phase delays different frequencies by different amounts, which reshapes the waveform even though no frequency is attenuated.
+- **Every distortionless system is all-pass.**
+- An all-pass system is distortionless **only if its phase is also linear**.
+- With non-linear phase, different frequencies are delayed by different amounts. The waveform changes shape, even though no frequency is weakened.
 
-**How to check.**
+**4. How to check whether a system is distortionless.**
 
-- Measure, or compute, $H(f)$ over the signal's band, e.g. by applying sinusoids of many frequencies and recording the gain and phase shift.
-- Confirm (i) $|H(f)|$ is flat, and (ii) $\theta(f)$ is a straight line through the origin. Equivalently, the **group delay** $t_g(f)=-\frac1{2\pi}\frac{d\theta}{df}$ is constant and $\theta(0)=0$, or a multiple of $\pi$.
-- In time: the impulse response is a single scaled, delayed impulse, $k\,\delta(t-t_d)$.
-- In practice it only needs to hold **over the band occupied by the signal**.`,
+1. Measure $H(f)$ over the signal's band: apply sinusoids of many frequencies and record the gain and the phase shift.
+2. Check that the **gain is flat**: $|H(f)|$ is constant.
+3. Check that the **phase is a straight line through the origin**. Equivalently, the group delay $t_g(f)=-\frac1{2\pi}\frac{d\theta}{df}$ is constant, and $\theta(0)=0$ (or a multiple of $\pi$).
+4. In time, the impulse response is a single scaled, delayed impulse, $k\,\delta(t-t_d)$.
+
+In practice this only has to hold **over the band the signal occupies**.`,
   },
   {
     id: "311-2122-2a",
@@ -48,25 +74,46 @@ So **every distortionless system is all-pass, but an all-pass system is distorti
     label: "Q2(a)",
     marks: 20,
     prompt: r`Differentiate between all-pass and distortionless transmission systems. Draw the frequency response of a distortionless transmission system. Justify from its time-domain representation why it is unrealizable.`,
-    solution: r`*Differences:* see the previous answer. All-pass = flat magnitude only. Distortionless = flat magnitude **and** linear phase.
+    solution: r`**1. All-pass vs distortionless.**
 
-**Frequency response.** For $H(f)=k\,e^{-j2\pi ft_d}$:
+| | all-pass | distortionless |
+|---|---|---|
+| gain $\lvert H(f)\rvert$ | constant | constant |
+| phase $\theta(f)$ | anything | straight line, $-2\pi ft_d$ |
+| output shape | may change | kept |
 
-- $|H(f)|$ is a horizontal line at height $k$ for **all** $f$.
-- $\theta(f)$ is a straight line through the origin with slope $-2\pi t_d$, going from positive values for $f<0$ to negative values for $f>0$.
+- **All-pass:** only the gain has to be flat.
+- **Distortionless:** the gain must be flat **and** the phase linear.
 
-**Time-domain view.** The inverse transform is
+**2. Frequency response of a distortionless system.**
 
 $$
-h(t)=k\,\delta(t-t_d).
+H(f)=k\,e^{-j2\pi ft_d}
 $$
 
-A system that is distortionless for *every* signal must have this impulse response. It is unrealisable because:
+- $|H(f)|=k$: a horizontal line at height $k$, for **all** $f$.
+- $\theta(f)=-2\pi ft_d$: a straight line through the origin with slope $-2\pi t_d$ (positive for $f<0$, negative for $f>0$).
+` + fig("fr-distortionless") + r`
+**3. Why it cannot be built: look at the time domain.**
 
-- an ideal impulse needs a flat spectrum over an **infinite bandwidth**, i.e. infinitely fast response with zero rise time;
-- every physical channel (wires, cables, amplifiers, air) has inductance, capacitance and finite bandwidth, so its gain must eventually fall off at high frequency, and $|H|$ cannot stay at $k$ for all $f$.
+The inverse transform of $k\,e^{-j2\pi ft_d}$ is a single delayed impulse:
 
-**In practice** we only need distortionless behaviour **over the signal's band**: $|H|\approx k$ and $\theta\approx-2\pi ft_d$ for $|f|<B$. That is achievable, for example an RC low-pass filter with $B\ll\frac1{2\pi RC}$, or equalisers.`,
+$$
+h(t)=k\,\delta(t-t_d)
+$$
+
+So a system that is distortionless for **every** signal must respond to an impulse with a perfect, scaled impulse.
+
+- A perfect impulse has a flat spectrum over an **infinite bandwidth**. The system would need to respond infinitely fast, with zero rise time.
+- Every real channel (wires, cables, amplifiers, air) has some inductance, capacitance and limited bandwidth. Its gain must fall off at high frequencies, so $|H|$ cannot stay at $k$ for **all** $f$.
+
+**4. In practice.** We only need distortionless behaviour **over the signal's band**:
+
+$$
+|H(f)|\approx k\quad\text{and}\quad\theta(f)\approx-2\pi ft_d\qquad\text{for }|f|<B
+$$
+
+That is achievable. Examples: an RC low-pass filter with $B\ll\frac1{2\pi RC}$, or an equaliser.`,
   },
   {
     id: "311-2021-4a",
@@ -77,28 +124,49 @@ A system that is distortionless for *every* signal must have this impulse respon
     marks: 20,
     prompt: r`State the characteristics of distortionless transmission. With examples, give a physical interpretation of these characteristics. What happens if they are not satisfied?`,
     alsoAsked: ["CSE 311 · 2012-13 Q7(a)"],
-    solution: r`**Derivation (2012-13 version).**
+    solution: r`**Step 1: what "distortionless" means.** The output is the input, only scaled and delayed:
 
 $$
-y(t)=k\,g(t-t_d)\ \xrightarrow{\ \mathcal F\ }\ Y(f)=k\,G(f)e^{-j2\pi ft_d}\ \Rightarrow\ H(f)=k\,e^{-j2\pi ft_d}.
+y(t)=k\,g(t-t_d)
 $$
 
-**Characteristics.**
+**Step 2: take the Fourier transform.**
 
-1. **Amplitude response constant:** $|H(f)|=k$.
-2. **Phase response linear in $f$, passing through the origin:** $\theta_h(f)=-2\pi f t_d$. The time delay $t_d=-\theta_h(f)/(2\pi f)$ is then the same for every frequency.
+$$
+Y(f)=k\,G(f)\,e^{-j2\pi ft_d}
+$$
 
-**Physical interpretation.**
+**Step 3: read off $H(f)=\frac{Y(f)}{G(f)}$.**
 
-- *Equal gain:* a signal is a recipe of frequency components in fixed proportions. Scaling all of them by the same $k$ keeps the recipe. *Example:* music through an amplifier that boosts bass more than treble sounds different. That is **amplitude distortion**.
-- *Equal delay:* the components must arrive *together*. A square wave is a sum of odd harmonics with precise alignment. Delay the 3rd harmonic more than the fundamental and the corners round off and overshoot shifts, even though no harmonic was weakened. That is **phase (delay) distortion**. Linear phase is exactly the condition for "equal delay", because a higher frequency needs proportionally more phase shift for the same time shift.
+$$
+H(f)=k\,e^{-j2\pi ft_d}
+$$
 
-**If not satisfied.**
+**The two characteristics.**
 
-- *Amplitude distortion:* some bands are attenuated or emphasised, so speech sounds muffled or tinny, and pulses widen.
-- *Phase or delay distortion:* components arrive at different times (dispersion). Pulses spread into neighbouring time slots, causing **inter-symbol interference** in digital links; video shows smearing and ghosting. The ear is less sensitive to phase than the eye or a data receiver.
+1. **Constant gain:** $|H(f)|=k$ at every frequency in the band.
+2. **Linear phase through the origin:**
 
-Both are *linear* distortions, so they can in principle be undone by an equaliser $H_{eq}(f)=1/H(f)$ over the band.`,
+$$
+\theta_h(f)=-2\pi f\,t_d
+$$
+
+   Then every frequency is delayed by the same time, $t_d=-\dfrac{\theta_h(f)}{2\pi f}$.
+` + fig("fr-distortionless") + r`
+**Physical meaning, with examples.**
+
+- **Equal gain.** A signal is a mix of frequencies in fixed proportions. Scaling every one by the same $k$ keeps the mix.
+  *Example:* an amplifier that boosts the bass more than the treble makes music sound different. That is **amplitude distortion**.
+- **Equal delay.** The components must arrive **together**.
+  *Example:* a square wave is a sum of odd harmonics lined up precisely. Delay the 3rd harmonic more than the fundamental and the corners change shape, even though no harmonic was weakened. That is **phase (delay) distortion**.
+- **Why the phase must be linear.** A higher frequency needs a proportionally bigger phase shift to be delayed by the same time. "Phase proportional to $f$" is exactly "same delay for all".
+` + fig("fr-phase-distortion") + r`
+**If they are not satisfied.**
+
+- **Amplitude distortion:** some bands are weakened or boosted. Speech sounds muffled or tinny, and pulses get wider.
+- **Phase (delay) distortion:** frequencies arrive at different times (dispersion). Pulses spread into their neighbours, causing **inter-symbol interference** in digital links; video smears and shows ghosts. The ear notices this less than the eye or a data receiver does.
+
+Both are linear distortions, so in principle an equaliser $H_{eq}(f)=\frac1{H(f)}$ over the band can undo them.`,
   },
   {
     id: "311-1718-1c",
@@ -109,29 +177,48 @@ Both are *linear* distortions, so they can in principle be undone by an equalise
     marks: 7,
     prompt: r`Write the transfer function of an ideal low-pass filter. From it, derive the impulse response in the time domain.`,
     alsoAsked: ["CSE 311 · 2010-11 Q6(a)", "CSE 311 · 2016-17 Q1(d)"],
-    solution: r`**Transfer function** (bandwidth $B$ Hz, linear phase with delay $t_d$):
+    solution: r`**Step 1: the transfer function.** An ideal low-pass filter with bandwidth $B$ Hz passes everything below $B$ unchanged (apart from a delay $t_d$) and blocks everything above:
 
 $$
-H(f)=\Pi\!\left(\frac{f}{2B}\right)e^{-j2\pi ft_d}=\begin{cases}e^{-j2\pi ft_d}, & |f|<B\\ 0, & |f|>B\end{cases}
+H(f)=\begin{cases}e^{-j2\pi ft_d}, & |f|<B\\[4pt] 0, & |f|>B\end{cases}
 $$
 
-**Impulse response.**
+In compact form:
 
 $$
-h(t)=\int_{-B}^{B}e^{j2\pi f(t-t_d)}df=\frac{\sin 2\pi B(t-t_d)}{\pi(t-t_d)}=2B\,\frac{\sin2\pi B(t-t_d)}{2\pi B(t-t_d)} .
+H(f)=\Pi\!\left(\frac{f}{2B}\right)e^{-j2\pi ft_d}
 $$
 
-In $\omega$ with cutoff $W$ rad/s (2010-11 wording): $h(t)=\dfrac{W}{\pi}\dfrac{\sin W(t-t_d)}{W(t-t_d)}$.
+**Step 2: inverse transform.** Only $|f|<B$ contributes:
 
-*Sketch:* a sinc centred at $t=t_d$, with peak $2B$ and zero crossings every $\frac1{2B}$ s, extending to $\pm\infty$.
+$$
+h(t)=\int_{-B}^{B}e^{-j2\pi ft_d}\,e^{j2\pi ft}\,df=\int_{-B}^{B}e^{j2\pi f(t-t_d)}\,df
+$$
 
-**Why it is physically unrealisable (2016-17 Q1(d), 2010-11 Q6(a)).**
+**Step 3: integrate.**
 
-- $h(t)$ is the response to $\delta(t)$, applied at $t=0$. But $h(t)\neq0$ for $t<0$: the filter would respond **before the input arrives**. It is **non-causal**.
-- Making $t_d$ larger delays the sinc but never removes its infinite tail to the left.
-- More generally, a causal filter cannot have $|H(f)|=0$ over a whole band (Paley–Wiener criterion: $\int\frac{|\ln|H(f)||}{1+f^2}df<\infty$ fails).
+$$
+h(t)=\frac{e^{j2\pi B(t-t_d)}-e^{-j2\pi B(t-t_d)}}{j2\pi(t-t_d)}=\frac{\sin 2\pi B(t-t_d)}{\pi(t-t_d)}
+$$
 
-**In practice:** truncate the tail and add enough delay, for example $h(t)u(t)$ with large $t_d$, to get a good, realisable approximation (Butterworth or Chebyshev filters).`,
+In sinc form:
+
+$$
+h(t)=2B\,\frac{\sin2\pi B(t-t_d)}{2\pi B(t-t_d)}
+$$
+
+(With cutoff $W$ rad/s, as in the 2010-11 wording: $h(t)=\dfrac{W}{\pi}\cdot\dfrac{\sin W(t-t_d)}{W(t-t_d)}$.)
+` + fig("fr-lpf-impulse") + r`
+**Sketch:** a sinc centred at $t=t_d$, peak $2B$, crossing zero every $\frac1{2B}$ s, and going on forever in both directions.
+
+**Why it cannot be built (2016-17 Q1(d), 2010-11 Q6(a)).**
+
+1. $h(t)$ is the response to $\delta(t)$, which arrives at $t=0$.
+2. But $h(t)\ne0$ for $t<0$: the filter would respond **before the input arrives**. It is **non-causal**.
+3. A bigger delay $t_d$ moves the sinc to the right, but its tail still stretches to $t=-\infty$.
+4. More generally, no causal filter can be exactly zero over a whole band (the Paley–Wiener criterion).
+
+**In practice:** cut off the left tail and add enough delay, for example use $h(t)\,u(t)$ with a large $t_d$. That gives a good, buildable approximation, as Butterworth and Chebyshev filters do.`,
   },
   {
     id: "311-1415L4-7b",
@@ -141,19 +228,30 @@ In $\omega$ with cutoff $W$ rad/s (2010-11 wording): $h(t)=\dfrac{W}{\pi}\dfrac{
     label: "Q7(b)",
     marks: 10,
     prompt: r`Draw the response of an ideal low-pass filter when the rectangular pulse of height $A$ on $|t|<T/2$ is applied. From the two diagrams, explain why the filter is called "ideal" rather than "real".`,
-    solution: r`**Output.** Use $y=x*h$ with $h(t)=2B\,\frac{\sin 2\pi B(t-t_d)}{2\pi B(t-t_d)}$. Integrating a sinc gives the sine integral $\operatorname{Si}(x)=\int_0^x\frac{\sin u}{u}du$:
+    solution: r`**Step 1: the filter.** An ideal low-pass filter (bandwidth $B$, delay $t_d$) has a sinc impulse response:
 
 $$
-y(t)=\frac{A}{\pi}\Big[\operatorname{Si}\big(2\pi B(t-t_d+\tfrac T2)\big)-\operatorname{Si}\big(2\pi B(t-t_d-\tfrac T2)\big)\Big].
+h(t)=2B\,\frac{\sin 2\pi B(t-t_d)}{2\pi B(t-t_d)}
 $$
 
-**What the drawing shows.**
+**Step 2: the output.** $y=x*h$. Integrating a sinc gives the sine integral, $\operatorname{Si}(x)=\int_0^x\frac{\sin u}{u}\,du$:
 
-- The output is a **rounded pulse centred at $t_d$**. It has finite rise and fall times, about $\frac{1}{2B}$, instead of vertical edges, because the high-frequency content of the sharp edges has been removed.
-- It has **ripples (overshoot of about 9%, the Gibbs phenomenon)** near the edges.
-- Its leading ripples start **before $t=-T/2$**, i.e. before the input pulse has begun (and with $t_d=0$, before $t=0$ in response to an input at $t=0$).
+$$
+y(t)=\frac{A}{\pi}\Big[\operatorname{Si}\big(2\pi B(t-t_d+\tfrac T2)\big)-\operatorname{Si}\big(2\pi B(t-t_d-\tfrac T2)\big)\Big]
+$$
+` + fig("fr-lpf-pulse") + r`
+**Step 3: what the drawing shows.**
 
-**Why "ideal".** The output appearing before the input means the filter is **non-causal**: its impulse response, a sinc, exists for $t<0$. No physical device can respond to an input it has not yet received. The brick-wall response, perfect flat passband, zero transition band and infinite stop-band attenuation, is a mathematical idealisation used for analysis. Real filters only approximate it with finite roll-off and some phase non-linearity.`,
+1. **Rounded edges.** The output is a smooth pulse centred at $t_d$. Its edges take about $\frac{1}{2B}$ to rise and fall, instead of jumping, because the filter removed the high frequencies that made the edges sharp.
+2. **Ripples.** Near each edge there is an overshoot of about 9% (the Gibbs phenomenon).
+3. **Output before input.** The first ripples start **before $t=-\frac T2$**, that is, before the input pulse has even begun.
+
+**Step 4: why it is called "ideal", not "real".**
+
+- An output that starts before its input means the filter is **non-causal**. Its impulse response (a sinc) is non-zero for $t<0$.
+- No physical device can react to an input it has not received yet.
+- The "brick-wall" response (perfectly flat pass band, zero transition, infinite stop-band attenuation) is a mathematical idealisation, used for analysis.
+- Real filters only approximate it, with a gradual roll-off and some non-linear phase.`,
   },
   {
     id: "311-1415-1c",
@@ -170,25 +268,44 @@ $$
 
 A pulse $g(t)$ band-limited to $B$ Hz is applied at the input. Show that the output is $y(t)=g(t-t_d)+\frac k2\big[g(t-t_d-T)+g(t-t_d+T)\big]$.`,
     alsoAsked: ["CSE 311 · 2012-13 Q7(c)"],
-    solution: r`Since $G(f)=0$ for $|f|>B$, the cut-off of $H$ does not matter. For all $f$,
+    solution: r`**Step 1: the cutoff doesn't matter here.** $g(t)$ has nothing above $B$, so $H$ being zero above $B$ changes nothing. For all $f$:
 
 $$
-Y(f)=G(f)H(f)=G(f)\big(1+k\cos2\pi fT\big)e^{-j2\pi ft_d}.
+Y(f)=G(f)\,H(f)=G(f)\big(1+k\cos2\pi fT\big)\,e^{-j2\pi ft_d}
 $$
 
-Expand the cosine with Euler, $\cos2\pi fT=\tfrac12\big(e^{j2\pi fT}+e^{-j2\pi fT}\big)$:
+**Step 2: write the cosine as two exponentials.**
 
 $$
-Y(f)=G(f)e^{-j2\pi ft_d}+\frac k2G(f)e^{-j2\pi f(t_d-T)}+\frac k2G(f)e^{-j2\pi f(t_d+T)} .
+\cos2\pi fT=\tfrac12\big(e^{j2\pi fT}+e^{-j2\pi fT}\big)
 $$
 
-Each term is $G(f)$ times a linear-phase factor, i.e. a **time shift**: $G(f)e^{-j2\pi f\tau}\leftrightarrow g(t-\tau)$. So
+**Step 3: multiply out.** Three terms appear:
+
+$$
+Y(f)=G(f)\,e^{-j2\pi ft_d}+\frac k2\,G(f)\,e^{-j2\pi f(t_d-T)}+\frac k2\,G(f)\,e^{-j2\pi f(t_d+T)}
+$$
+
+**Step 4: each term is a time shift.** By the time-shift rule:
+
+$$
+G(f)\,e^{-j2\pi f\tau}\ \longleftrightarrow\ g(t-\tau)
+$$
+
+- the first term is $g$ delayed by $t_d$;
+- the second is $g$ delayed by $t_d-T$, times $\frac k2$;
+- the third is $g$ delayed by $t_d+T$, times $\frac k2$.
 
 $$
 \boxed{y(t)=g(t-t_d)+\frac k2\Big[g(t-t_d+T)+g(t-t_d-T)\Big]}
 $$
+` + fig("fr-echo") + r`
+**What it means: "paired echoes".**
 
-**Interpretation — "paired echoes".** The phase is perfectly linear, but the amplitude response has a cosine **ripple**. A ripple in $|H(f)|$ produces a main output $g(t-t_d)$ plus two small echoes of strength $k/2$, one $T$ seconds before and one $T$ seconds after. This shows how amplitude distortion spreads a pulse in time, which causes inter-symbol interference in digital links.`,
+- The phase is perfectly linear, so that part causes no distortion.
+- But the gain has a cosine **ripple**.
+- That ripple produces the main pulse $g(t-t_d)$ **plus two small echoes** of size $\frac k2$: one $T$ seconds early and one $T$ seconds late.
+- So amplitude distortion spreads a pulse out in time. In digital links this causes inter-symbol interference.`,
   },
   {
     id: "311-1314-1c",
@@ -201,29 +318,64 @@ $$
 
 (ii) For a distortionless LTI system, $|H(f)|$ must be constant and $\theta(f)$ linear through the origin. Under what conditions can the RC circuit (series $R$, output taken across the shunt $C$) be approximated as distortionless?`,
     alsoAsked: ["CSE 311 · 2011-12 Q6(b)"],
-    solution: r`**(i) Measuring $H(f)$.**
+    solution: r`**(i) Measuring $H(f)$ in practice.** Three ways:
 
-- **Sinusoidal sweep** (the standard method). Since $e^{j2\pi ft}$ is an eigenfunction, the input $A\cos2\pi f_1t$ produces $A|H(f_1)|\cos(2\pi f_1t+\theta(f_1))$. Apply sinusoids at many frequencies $f_1$ and measure the output-to-input amplitude ratio, which gives $|H(f_1)|$, and the phase shift, which gives $\theta(f_1)$. Plot both against $f$.
-- **Impulse method.** Apply a very narrow, tall pulse (an approximate $\delta$), record the output $\approx h(t)$, and compute $H(f)=\mathcal F\{h\}$ (in practice with an FFT).
-- **Broadband method.** Apply a known wide-band input $x(t)$ (white noise, a chirp, a step) and compute $H(f)=Y(f)/X(f)$ from the measured spectra.
+**Method 1: sinusoidal sweep (the standard way).**
 
-**(ii) RC low-pass.** The output across $C$ gives
-
-$$
-H(f)=\frac{1/(j2\pi fC)}{R+1/(j2\pi fC)}=\frac{1}{1+j2\pi fRC},\quad |H(f)|=\frac{1}{\sqrt{1+(2\pi fRC)^2}},\quad \theta(f)=-\tan^{-1}(2\pi fRC).
-$$
-
-If $2\pi fRC\ll1$:
-
-- $|H(f)|\approx1$, which is constant;
-- $\theta(f)\approx-2\pi fRC$, which is linear through the origin, with delay $t_d=RC$.
-
-So the circuit is approximately distortionless **for signals whose bandwidth satisfies**
+1. Apply $A\cos2\pi f_1t$.
+2. An LTI system outputs a sinusoid of the same frequency:
 
 $$
-B\ll\frac{1}{2\pi RC}\qquad(\text{equivalently } \omega\ll 1/RC),
+A\,|H(f_1)|\cos\big(2\pi f_1t+\theta(f_1)\big)
 $$
 
-and over that band it simply delays the input by $RC$ seconds. *(2011-12, part b)* Derivation of $H$ for a distortionless system: $g(t)=k\,f(t-t_d)\Rightarrow G(\omega)=kF(\omega)e^{-j\omega t_d}\Rightarrow H(\omega)=k\,e^{-j\omega t_d}$.`,
+3. The ratio of output to input amplitude gives $|H(f_1)|$.
+4. The phase shift between them gives $\theta(f_1)$.
+5. Repeat for many frequencies and plot both against $f$.
+
+**Method 2: impulse.** Apply a very short, tall pulse (close to $\delta(t)$). The output is close to $h(t)$. Then compute $H(f)=\mathcal F\{h\}$, usually with an FFT.
+
+**Method 3: broadband input.** Apply a known wide-band input (white noise, a chirp or a step), measure both spectra, and compute
+
+$$
+H(f)=\frac{Y(f)}{X(f)}
+$$
+
+**(ii) When is the RC circuit nearly distortionless?**
+
+**Step 1: find $H(f)$.** With the output across $C$, the circuit is a voltage divider:
+
+$$
+H(f)=\frac{1/(j2\pi fC)}{R+1/(j2\pi fC)}=\frac{1}{1+j2\pi fRC}
+$$
+` + fig("fr-rc-circuit") + r`
+**Step 2: gain and phase.**
+
+$$
+|H(f)|=\frac{1}{\sqrt{1+(2\pi fRC)^2}}
+$$
+
+$$
+\theta(f)=-\tan^{-1}(2\pi fRC)
+$$
+
+**Step 3: make $2\pi fRC$ small.** If $2\pi fRC\ll1$:
+
+- $|H(f)|\approx1$, which is **constant**;
+- $\tan^{-1}x\approx x$ for small $x$, so $\theta(f)\approx-2\pi f\,RC$, which is a **straight line through the origin**, with delay $t_d=RC$.
+` + fig("fr-rc-response") + r`
+**Answer.** The RC circuit is approximately distortionless for signals whose bandwidth is small enough:
+
+$$
+B\ll\frac{1}{2\pi RC}\qquad\left(\text{equivalently }\omega\ll\frac1{RC}\right)
+$$
+
+Over that band it simply delays the signal by $RC$ seconds.
+
+**(2011-12, part b): $H$ of a distortionless system.**
+
+$$
+g(t)=k\,f(t-t_d)\ \Rightarrow\ G(\omega)=k\,F(\omega)\,e^{-j\omega t_d}\ \Rightarrow\ H(\omega)=k\,e^{-j\omega t_d}
+$$`,
   },
 ]

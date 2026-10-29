@@ -13,6 +13,9 @@ import { zFigures } from "./b5-z"
 import { questionFigures } from "./questions"
 import { interactiveFigures } from "./interactive-map"
 import { bookFigures } from "./book"
+import { convCaseFigures } from "./conv-cases"
+import { sheetAnikFigures } from "./sheets/anik"
+import { sheetAshrafFigures } from "./sheets/ashraf"
 
 export const figures: FigureMap = {
   ...signalsFigures,
@@ -29,4 +32,7 @@ export const figures: FigureMap = {
   ...questionFigures,
   ...interactiveFigures,
   ...bookFigures,
+  ...convCaseFigures,
+  ...sheetAnikFigures,
+  ...sheetAshrafFigures,
 }

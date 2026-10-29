@@ -8,7 +8,7 @@ import { r, stems, type P } from "./util"
  * can be read stage by stage. Rows follow the usual drawing: DIT takes its
  * inputs in bit-reversed order, DIF delivers its outputs in bit-reversed order.
  */
-function Butterfly4({ variant, inverse, values, inLabels, outLabels }: { variant: "dit" | "dif"; inverse?: boolean; values: string[][]; inLabels: string[]; outLabels: string[] }) {
+export function Butterfly4({ variant, inverse, values, inLabels, outLabels }: { variant: "dit" | "dif"; inverse?: boolean; values: string[][]; inLabels: string[]; outLabels: string[] }) {
   const id = "b" + useId().replace(/[^a-zA-Z0-9]/g, "")
   const rowH = 46
   const colW = 150

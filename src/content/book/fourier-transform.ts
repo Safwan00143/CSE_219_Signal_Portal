@@ -209,21 +209,53 @@ This illustrates a general rule for **real** signals: even part $\leftrightarrow
     book: "Oppenheim",
     ref: "Problem 4.11",
     prompt: r`Given the relationships $y(t)=x(t)*h(t)$ and $g(t)=x(3t)*h(3t)$, and given that $x(t)$ has Fourier transform $X(j\omega)$ and $h(t)$ has Fourier transform $H(j\omega)$, use Fourier transform properties to show that $g(t)$ has the form $g(t)=Ay(Bt)$. Determine the values of $A$ and $B$.`,
-    solution: r`Work in the frequency domain, where convolution becomes multiplication.
+    solution: r`**Idea:** work in the frequency domain, where convolution becomes multiplication.
 
-$$x(3t)\leftrightarrow\tfrac13X\left(\tfrac{j\omega}3\right),\qquad h(3t)\leftrightarrow\tfrac13H\left(\tfrac{j\omega}3\right).$$
+**Step 1: transform the two squeezed signals.** The scaling rule is $f(at)\leftrightarrow\frac1{|a|}F\!\left(\frac{j\omega}a\right)$. With $a=3$:
 
-So
+$$
+x(3t)\ \longleftrightarrow\ \tfrac13\,X\!\left(\tfrac{j\omega}3\right)
+$$
 
-$$G(j\omega)=\tfrac19X\left(\tfrac{j\omega}3\right)H\left(\tfrac{j\omega}3\right)=\tfrac19Y\left(\tfrac{j\omega}3\right).$$
+$$
+h(3t)\ \longleftrightarrow\ \tfrac13\,H\!\left(\tfrac{j\omega}3\right)
+$$
 
-Compare with the transform of $y(3t)$, which is $\frac13Y\left(\frac{j\omega}3\right)$. Then
+**Step 2: multiply them.** $g$ is their convolution, so $G$ is the product:
 
-$$G(j\omega)=\tfrac13\cdot\left[\tfrac13Y\left(\tfrac{j\omega}3\right)\right]\ \Rightarrow\ g(t)=\tfrac13\,y(3t).$$
+$$
+G(j\omega)=\tfrac19\,X\!\left(\tfrac{j\omega}3\right)H\!\left(\tfrac{j\omega}3\right)
+$$
 
-$$\boxed{A=\tfrac13,\quad B=3}$$
+**Step 3: recognise $Y$.** Since $Y=XH$, the product $X\!\left(\tfrac{j\omega}3\right)H\!\left(\tfrac{j\omega}3\right)$ is just $Y\!\left(\tfrac{j\omega}3\right)$:
 
-**Intuition:** compressing both signals by 3 compresses their convolution by 3. The convolution integral also runs over a variable that has been compressed, which scales its area by $\frac13$. A quick check: two unit pulses of width 1 convolve to a triangle of height 1. Pulses of width $\frac13$ give a triangle of height $\frac13$.`,
+$$
+G(j\omega)=\tfrac19\,Y\!\left(\tfrac{j\omega}3\right)
+$$
+
+**Step 4: compare with $y(3t)$.** By the same scaling rule:
+
+$$
+y(3t)\ \longleftrightarrow\ \tfrac13\,Y\!\left(\tfrac{j\omega}3\right)
+$$
+
+So $G$ is one third of that:
+
+$$
+G(j\omega)=\tfrac13\cdot\left[\tfrac13\,Y\!\left(\tfrac{j\omega}3\right)\right]
+$$
+
+$$
+g(t)=\tfrac13\,y(3t)
+$$
+
+$$
+\boxed{A=\tfrac13,\qquad B=3}
+$$
+
+**Why $\frac13$?** Squeezing both signals by 3 squeezes their convolution by 3. The convolution integral also runs over a squeezed variable, which shrinks its area by $\frac13$.
+
+*Quick check:* two unit pulses of width 1 convolve to a triangle of height 1. Two pulses of width $\frac13$ give a triangle of height $\frac13$. ✓`,
   },
   {
     id: "bk-opp-4.12",

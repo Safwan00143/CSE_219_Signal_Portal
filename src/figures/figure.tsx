@@ -26,7 +26,7 @@ export function FigureFrame({ entry, id }: { entry?: FigureEntry; id: string }) 
   }
   return (
     <figure className={entry.wide ? "my-8" : "my-8 max-w-[30rem]"}>
-      <div className="text-foreground">{entry.node}</div>
+      <div className="rounded-lg border border-border bg-card p-3 text-foreground">{entry.node}</div>
       {entry.caption && (
         <figcaption className="mt-2 text-[13px] leading-relaxed text-muted-foreground">
           <Caption text={entry.caption} />

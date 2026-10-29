@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { usePathname } from "next/navigation"
+import { useEffect, useRef, useState } from "react"
+import { useRoute } from "@/lib/use-route"
 import { AnimatePresence, motion } from "motion/react"
 import { useTheme } from "next-themes"
 import GridLoader from "@/components/ui/grid-loader"
@@ -13,9 +13,14 @@ const SEQUENCE = ["solo-center", "plus-hollow", "plus-full", "corners", "border"
  * so a slow page switch never looks like nothing happened.
  */
 export function NavLoader() {
-  const pathname = usePathname()
+  const pathname = useRoute()
   const { resolvedTheme } = useTheme()
   const [pendingFrom, setPendingFrom] = useState<string | null>(null)
+  // Remember the route (not the raw URL), so the static build compares like with like.
+  const route = useRef(pathname)
+  useEffect(() => {
+    route.current = pathname
+  }, [pathname])
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
@@ -25,7 +30,7 @@ export function NavLoader() {
       if (!a || a.target === "_blank" || a.hasAttribute("download")) return
       const url = new URL(a.href, location.href)
       if (url.origin !== location.origin || url.pathname === location.pathname) return
-      setPendingFrom(location.pathname)
+      setPendingFrom(route.current)
     }
     document.addEventListener("click", onClick, true)
     return () => document.removeEventListener("click", onClick, true)

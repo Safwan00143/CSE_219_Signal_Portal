@@ -42,23 +42,50 @@ $$y_2[n]=y_1[n+2]=2\delta[n+3]+4\delta[n+2]+2\delta[n+1]+2\delta[n]-2\delta[n-2]
 $$x[n]=\left(\tfrac12\right)^{n-2}u[n-2],\qquad h[n]=u[n+2].$$
 
 Determine and plot the output $y[n]=x[n]*h[n]$.`,
-    solution: r`Write the convolution sum and let the step functions set the limits:
+    solution: r`**Step 1: write the sum.**
 
-$$y[n]=\sum_{k=-\infty}^{\infty}x[k]h[n-k]=\sum_k\left(\tfrac12\right)^{k-2}u[k-2]\,u[n-k+2].$$
+$$
+y[n]=\sum_{k=-\infty}^{\infty}x[k]\,h[n-k]
+$$
 
-- $u[k-2]$ is non-zero for $k\ge2$.
-- $u[n-k+2]$ is non-zero for $k\le n+2$.
+**Step 2: where is each signal non-zero?**
 
-So the sum runs over $2\le k\le n+2$. That range is empty unless $n+2\ge2$, i.e. $n\ge0$. For $n\ge0$, substitute $m=k-2$:
+- $x[k]=\left(\tfrac12\right)^{k-2}$ for $k\ge2$, and $0$ before that.
+- $h[n-k]=u[n-k+2]$ is $1$ when $n-k+2\ge0$, that is for $k\le n+2$.
 
-$$y[n]=\sum_{m=0}^{n}\left(\tfrac12\right)^m=\frac{1-\left(\frac12\right)^{n+1}}{1-\frac12}=2\left[1-\left(\tfrac12\right)^{n+1}\right].$$
+So the flipped step is a row of ones that **ends** at $k=n+2$.
 
-$$\boxed{\,y[n]=2\left[1-\left(\tfrac12\right)^{n+1}\right]u[n]\,}$$
+**Step 3: the cases.** It all depends on where the edge $k=n+2$ sits compared with $k=2$, where $x$ starts.
 
-Checks:
-- $y[0]=1$: only $x[2]=1$ is inside the window.
-- $y[n]\to2=\sum_n x[n]$: in the end the step collects all of $x$.
-` + fig("bk-l-23"),
+**Case 1: $n<0$.**
+` + fig("cc-23-a") + r`
+The edge $n+2$ is below 2, so the ones end before $x$ begins. Nothing overlaps:
+
+$$
+y[n]=0
+$$
+
+**Case 2: $n\ge0$.**
+` + fig("cc-23-b") + r`
+Now the overlap runs from $k=2$ to $k=n+2$. In that range $h[n-k]=1$, so we just add the samples of $x$:
+
+$$
+y[n]=\sum_{k=2}^{n+2}\left(\tfrac12\right)^{k-2}
+$$
+
+Let $m=k-2$, so $m$ goes from $0$ to $n$:
+
+$$
+y[n]=\sum_{m=0}^{n}\left(\tfrac12\right)^{m}=\frac{1-\left(\frac12\right)^{n+1}}{1-\frac12}=2\left[1-\left(\tfrac12\right)^{n+1}\right]
+$$
+
+**Answer.**
+
+$$
+\boxed{\,y[n]=2\left[1-\left(\tfrac12\right)^{n+1}\right]u[n]\,}
+$$
+` + fig("bk-l-23") + r`
+**Check.** At $n=0$ only one sample overlaps: $y[0]=x[2]=1$, and the formula gives $2\left(1-\frac12\right)=1$. ✓ As $n$ grows the step swallows all of $x$, so $y\to2$, the total area of $x$.`,
   },
   {
     id: "bk-opp-2.4",
@@ -68,25 +95,71 @@ Checks:
     prompt: r`Compute and plot $y[n]=x[n]*h[n]$, where
 
 $$x[n]=\begin{cases}1,&3\le n\le8\\0,&\text{otherwise}\end{cases}\qquad h[n]=\begin{cases}1,&4\le n\le15\\0,&\text{otherwise.}\end{cases}$$`,
-    solution: r`Both signals are 0/1 pulses, so $y[n]=\sum_kx[k]h[n-k]$ simply **counts** the values of $k$ for which both are 1:
+    solution: r`**Step 1: what are we adding?** Both signals are made of ones, so
 
-$$3\le k\le8\quad\text{and}\quad4\le n-k\le15\iff n-15\le k\le n-4.$$
+$$
+y[n]=\sum_kx[k]\,h[n-k]
+$$
 
-So $y[n]$ is the number of integers in $[\max(3,n-15),\ \min(8,n-4)]$.
+simply **counts** how many $k$ have both signals equal to 1.
 
-**Support.** $x$ starts at 3 and $h$ at 4, so $y$ starts at $3+4=7$. It ends at $8+15=23$.
+**Step 2: where is each signal 1?**
 
-**Pieces.**
+- $x[k]=1$ for $3\le k\le8$ (6 samples, fixed).
+- $h[n-k]=1$ when $4\le n-k\le15$, that is for
 
-- $7\le n\le11$: the range is $[3,\,n-4]$, which holds $n-6$ values (1 to 5).
-- $12\le n\le18$: the range is $[3,8]$, all 6 samples of $x$, so $y=6$.
-- $19\le n\le23$: the range is $[n-15,\,8]$, which holds $24-n$ values (5 down to 1).
+$$
+n-15\le k\le n-4
+$$
 
-$$y[n]=\begin{cases}n-6,&7\le n\le11\\6,&12\le n\le18\\24-n,&19\le n\le23\\0,&\text{otherwise}\end{cases}$$
+This is a window of 12 ones that slides right as $n$ grows. Its right edge is $k=n-4$ and its left edge is $k=n-15$.
+
+**Step 3: slide the window across $x$.** Five situations appear.
+
+**Case 1: $n<7$ (not yet touching).**
+` + fig("cc-24-a") + r`
+The right edge $n-4$ is below 3. No overlap, so $y[n]=0$.
+
+**Case 2: $7\le n\le11$ (entering).**
+` + fig("cc-24-b") + r`
+The overlap is from $k=3$ to $k=n-4$. Count the samples:
+
+$$
+y[n]=(n-4)-3+1=n-6
+$$
+
+This climbs $1,2,3,4,5$.
+
+**Case 3: $12\le n\le18$ (all of $x$ inside the window).**
+` + fig("cc-24-c") + r`
+All six samples of $x$ are covered:
+
+$$
+y[n]=6
+$$
+
+**Case 4: $19\le n\le23$ (leaving).**
+` + fig("cc-24-d") + r`
+The overlap is from $k=n-15$ to $k=8$:
+
+$$
+y[n]=8-(n-15)+1=24-n
+$$
+
+This falls $5,4,3,2,1$.
+
+**Case 5: $n>23$.** The window has passed $x$, so $y[n]=0$.
+
+**Answer.**
+
+$$
+y[n]=\begin{cases}n-6,&7\le n\le11\\6,&12\le n\le18\\24-n,&19\le n\le23\\0,&\text{otherwise}\end{cases}
+$$
 ` + fig("bk-l-24") + r`
-Checks:
-- The total $\sum y=6\times12=72$, the product of the two areas.
-- The length is $6+12-1=17$ samples, from 7 to 23.`,
+**Checks.**
+
+- The length is $6+12-1=17$ samples, from $n=7$ to $n=23$. ✓
+- The total is $\sum y=6\times12=72$, the product of the two areas. ✓`,
   },
   {
     id: "bk-opp-2.5",
@@ -214,17 +287,68 @@ and $h(t)=x(t/\alpha)$, where $0<\alpha\le1$.
 (a) Determine and sketch $y(t)=x(t)*h(t)$.
 
 (b) If $dy(t)/dt$ contains only three discontinuities, what is the value of $\alpha$?`,
-    solution: r`**(a)** $h(t)=x(t/\alpha)$ is 1 for $0\le t\le\alpha$: a pulse of width $\alpha\le1$. Flip it, $h(t-\tau)$ as a function of $\tau$ lives on $[t-\alpha,\,t]$, and slide it across $x$ on $[0,1]$. $y(t)$ is the length of the overlap:
+    solution: r`**Step 1: the two pulses.**
 
-- $t<0$: no overlap, so $y=0$.
-- $0\le t\le\alpha$: the overlap is $[0,t]$, so $y=t$.
-- $\alpha\le t\le1$: the short pulse is fully inside, so $y=\alpha$.
-- $1\le t\le1+\alpha$: the overlap is $[t-\alpha,1]$, so $y=1+\alpha-t$.
-- $t>1+\alpha$: $y=0$.
+- $x(\tau)=1$ for $0\le\tau\le1$ (stays fixed).
+- $h(t)=x(t/\alpha)$ is $1$ for $0\le t\le\alpha$: a **shorter** pulse of width $\alpha$.
+
+Flip and shift it: $h(t-\tau)=1$ for
+
+$$
+t-\alpha\le\tau\le t
+$$
+
+So the short pulse sits on $[t-\alpha,\ t]$, with its right edge at $\tau=t$.
+
+**Step 2: what $y(t)$ means here.** Both pulses have height 1, so
+
+$$
+y(t)=\int x(\tau)h(t-\tau)\,d\tau=\text{length of the overlap}
+$$
+
+**Step 3: slide the short pulse from left to right.** (The pictures use $\alpha=0.4$.)
+
+**Case 1: $t<0$.** The short pulse is still left of $x$. No overlap, so $y(t)=0$.
+
+**Case 2: $0\le t\le\alpha$ (entering).**
+` + fig("cc-210-a") + r`
+The overlap is $[0,\ t]$:
+
+$$
+y(t)=t
+$$
+
+**Case 3: $\alpha\le t\le1$ (fully inside).**
+` + fig("cc-210-b") + r`
+The whole short pulse lies inside $x$. The overlap $[t-\alpha,\ t]$ has length $\alpha$:
+
+$$
+y(t)=\alpha
+$$
+
+**Case 4: $1\le t\le1+\alpha$ (leaving).**
+` + fig("cc-210-c") + r`
+The overlap is $[t-\alpha,\ 1]$:
+
+$$
+y(t)=1-(t-\alpha)=1+\alpha-t
+$$
+
+**Case 5: $t>1+\alpha$.** The short pulse has left $x$, so $y(t)=0$.
+
+**Answer (a).** A trapezoid: it rises, stays flat at height $\alpha$, then falls.
+
+$$
+y(t)=\begin{cases}0,&t<0\\t,&0\le t\le\alpha\\\alpha,&\alpha\le t\le1\\1+\alpha-t,&1\le t\le1+\alpha\\0,&t>1+\alpha\end{cases}
+$$
 ` + fig("bk-l-210") + r`
-**(b)** $y$ is continuous, but its slope jumps at each corner, at $t=0$, $\alpha$, $1$ and $1+\alpha$. That is four discontinuities of $dy/dt$ in general. There are only three when two corners merge, i.e. $\alpha=1$. Then the flat top disappears and $y$ becomes the triangle $1-|t-1|$, with slope changes at $0$, $1$ and $2$.
+**(b)** $y(t)$ itself is continuous, but its **slope** jumps at every corner of the trapezoid: $t=0,\ \alpha,\ 1,\ 1+\alpha$. That is 4 jumps in $\frac{dy}{dt}$.
 
-$$\boxed{\alpha=1}$$`,
+We are told there are only 3. That happens only if two corners merge, $\alpha=1$. Then the flat part disappears and $y$ becomes a triangle with corners at $0,\ 1,\ 2$.
+
+$$
+\boxed{\alpha=1}
+$$`,
   },
   {
     id: "bk-opp-2.11",
@@ -234,24 +358,63 @@ $$\boxed{\alpha=1}$$`,
     prompt: r`Let $x(t)=u(t-3)-u(t-5)$ and $h(t)=e^{-3t}u(t)$.
 
 (a) Compute $y(t)=x(t)*h(t)$. (b) Compute $g(t)=\left(\frac{dx(t)}{dt}\right)*h(t)$. (c) How is $g(t)$ related to $y(t)$?`,
-    solution: r`**(a)** $y(t)=\int x(\tau)h(t-\tau)\,d\tau=\int_3^5e^{-3(t-\tau)}u(t-\tau)\,d\tau$. The factor $u(t-\tau)$ keeps only $\tau\le t$, so there are three cases:
+    solution: r`**(a) Step 1: the two signals.**
 
-- $t<3$: no overlap, so $y=0$.
-- $3\le t\le5$: $\displaystyle y=\int_3^te^{-3(t-\tau)}d\tau=\frac13\left(1-e^{-3(t-3)}\right)$.
-- $t>5$: $\displaystyle y=\int_3^5e^{-3(t-\tau)}d\tau=\frac13\left(e^{-3(t-5)}-e^{-3(t-3)}\right)$.
+- $x(\tau)=1$ for $3\le\tau\le5$ (a pulse, fixed).
+- $h(t-\tau)=e^{-3(t-\tau)}$ for $\tau\le t$, and $0$ for $\tau>t$. It is the flipped exponential, with its edge (height 1) at $\tau=t$, decaying to the left.
 
-This is the familiar RC-circuit shape: charge towards $\tfrac13$ while the input is on, then discharge.
+**Step 2: the cases.** Compare the edge $\tau=t$ with the pulse $[3,5]$.
 
-**(b)** $\frac{dx}{dt}=\delta(t-3)-\delta(t-5)$, so convolution just places copies of $h$:
+**Case 1: $t<3$.**
+` + fig("cc-211-a") + r`
+The exponential lives left of $\tau=t<3$, but the pulse starts at 3. No overlap:
 
-$$g(t)=e^{-3(t-3)}u(t-3)-e^{-3(t-5)}u(t-5).$$
+$$
+y(t)=0
+$$
 
-**(c)** Differentiating (a) gives exactly this:
-- for $3<t<5$, $\frac{dy}{dt}=e^{-3(t-3)}$;
-- for $t>5$, $\frac{dy}{dt}=-e^{-3(t-5)}+e^{-3(t-3)}$.
+**Case 2: $3\le t\le5$.**
+` + fig("cc-211-b") + r`
+The overlap is $[3,\ t]$:
 
-So $g(t)=\dfrac{dy(t)}{dt}$. This is the **derivative property** of convolution, $\frac{d}{dt}(x*h)=\frac{dx}{dt}*h$. It is often the fastest way to convolve with a signal made of steps: convolve with the impulses, then integrate.
-` + fig("bk-l-211"),
+$$
+y(t)=\int_3^te^{-3(t-\tau)}\,d\tau=e^{-3t}\int_3^te^{3\tau}\,d\tau=e^{-3t}\cdot\frac{e^{3t}-e^{9}}{3}=\frac13\left(1-e^{-3(t-3)}\right)
+$$
+
+**Case 3: $t>5$.**
+` + fig("cc-211-c") + r`
+The whole pulse $[3,\ 5]$ is covered:
+
+$$
+y(t)=\int_3^5e^{-3(t-\tau)}\,d\tau=e^{-3t}\cdot\frac{e^{15}-e^{9}}{3}=\frac13\left(e^{-3(t-5)}-e^{-3(t-3)}\right)
+$$
+
+This is the familiar RC-circuit shape: it charges towards $\tfrac13$ while the pulse is on, then discharges.
+
+**(b)** The derivative of the pulse is just two impulses:
+
+$$
+\frac{dx}{dt}=\delta(t-3)-\delta(t-5)
+$$
+
+Convolving with an impulse simply places a copy of $h$ there:
+
+$$
+g(t)=h(t-3)-h(t-5)=e^{-3(t-3)}u(t-3)-e^{-3(t-5)}u(t-5)
+$$
+
+**(c)** Differentiate the answer of (a):
+
+- for $3<t<5$: $\dfrac{dy}{dt}=e^{-3(t-3)}$;
+- for $t>5$: $\dfrac{dy}{dt}=e^{-3(t-3)}-e^{-3(t-5)}$.
+
+That is exactly $g(t)$. So
+
+$$
+g(t)=\frac{dy(t)}{dt}
+$$
+` + fig("bk-l-211") + r`
+**Why this is useful.** $\frac{d}{dt}(x*h)=\frac{dx}{dt}*h$. When a signal is built from steps, convolve with its impulses first (easy), then integrate.`,
   },
   {
     id: "bk-opp-2.23",

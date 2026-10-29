@@ -154,11 +154,47 @@ Even though sampling is below the Nyquist rate, the **low** part of the spectrum
 (b) The signal $x(t)$ with Fourier transform $X(j\omega)=u(\omega+\omega_0)-u(\omega-\omega_0)$ can undergo impulse-train sampling without aliasing, provided that the sampling period $T<\pi/\omega_0$.
 
 (c) The signal $x(t)$ with Fourier transform $X(j\omega)=u(\omega)-u(\omega-\omega_0)$ can undergo impulse-train sampling without aliasing, provided that the sampling period $T<2\pi/\omega_0$.`,
-    solution: r`**(a) False.** $x$ is a pulse of finite duration, so its spectrum $\frac{2\sin\omega T_0}{\omega}$ extends to infinite frequency. **No** sampling rate avoids aliasing for a time-limited signal.
+    solution: r`**The test for every part:** sampling makes copies of the spectrum every $\omega_s=\frac{2\pi}{T}$. There is no aliasing exactly when the copies don't overlap.
 
-**(b) True.** $X$ is a rectangle on $|\omega|<\omega_0$, so $\omega_M=\omega_0$. No aliasing requires $\frac{2\pi}T>2\omega_0$, i.e. $T<\frac\pi{\omega_0}$.
+**(a) False.**
 
-**(c) True.** $X$ occupies only $0<\omega<\omega_0$. This is a complex signal with a one-sided band of total width $\omega_0$. Copies spaced by $\omega_s$ do not overlap as long as $\omega_s>\omega_0$, i.e. $T<\frac{2\pi}{\omega_0}$. The usual "$2\omega_M$" rule assumes a band symmetric about 0. What really matters is the **total width** of the occupied band.`,
+1. $x(t)$ is a pulse that lasts only from $-T_0$ to $T_0$.
+2. Its spectrum is $\dfrac{2\sin\omega T_0}{\omega}$, which never becomes zero for good: it reaches to infinite frequency.
+3. So the copies always overlap, whatever $T$ is.
+
+**No sampling rate avoids aliasing for a time-limited signal.**
+
+**(b) True.**
+
+1. $X(j\omega)$ is a rectangle on $-\omega_0<\omega<\omega_0$, so the highest frequency is $\omega_M=\omega_0$.
+2. No aliasing needs $\omega_s>2\omega_M$:
+
+$$
+\frac{2\pi}{T}>2\omega_0
+$$
+
+3. That is
+
+$$
+T<\frac{\pi}{\omega_0}
+$$
+
+**(c) True.**
+
+1. $X(j\omega)$ is non-zero only for $0<\omega<\omega_0$: a band of total width $\omega_0$, on one side only. (So $x(t)$ is complex.)
+2. Copies of a band of width $\omega_0$, spaced by $\omega_s$, don't overlap when $\omega_s>\omega_0$:
+
+$$
+\frac{2\pi}{T}>\omega_0
+$$
+
+3. That is
+
+$$
+T<\frac{2\pi}{\omega_0}
+$$
+
+**Lesson:** the usual "$\omega_s>2\omega_M$" rule assumes a band that is symmetric about zero. What really matters is the **total width** of the occupied band.`,
   },
   {
     id: "bk-opp-7.21",
@@ -192,27 +228,43 @@ Parts (d) and (g) look alike. The difference is that knowing $x$ is **real** giv
 $$x_1(t)=\sum_{n=-\infty}^{\infty}x(nT)h_1(t-nT),$$
 
 where $h_1(t)$ is the triangle of height 1 on $-T<t<T$. Specify the frequency response of a filter that produces $x_1(t)$ as its output when $x_0(t)$ is the input.`,
-    solution: r`Both outputs are the impulse-sampled signal $x_p(t)=\sum x(nT)\delta(t-nT)$ passed through a different reconstruction filter:
+    solution: r`**Step 1: both holds start from the same impulse samples.** Let
 
-$$X_0(j\omega)=X_p(j\omega)H_0(j\omega),\qquad X_1(j\omega)=X_p(j\omega)H_1(j\omega).$$
+$$
+x_p(t)=\sum_nx(nT)\,\delta(t-nT)
+$$
 
-So the filter we want is $H(j\omega)=\frac{H_1(j\omega)}{H_0(j\omega)}$.
+- The zero-order hold is $x_p$ passed through $h_0$: $\ X_0(j\omega)=X_p(j\omega)\,H_0(j\omega)$.
+- The first-order hold is $x_p$ passed through $h_1$: $\ X_1(j\omega)=X_p(j\omega)\,H_1(j\omega)$.
 
-**Zero-order hold**, $h_0(t)=1$ on $0\le t<T$:
+So the filter that turns $x_0$ into $x_1$ is
 
-$$H_0(j\omega)=e^{-j\omega T/2}\frac{2\sin(\omega T/2)}{\omega}.$$
+$$
+H(j\omega)=\frac{H_1(j\omega)}{H_0(j\omega)}
+$$
 
-**First-order hold**: a triangle of width $2T$ is the convolution of two unit pulses of width $T$, scaled by $\frac1T$:
+**Step 2: the zero-order hold.** $h_0(t)=1$ on $0\le t<T$, a pulse of width $T$ centred at $\frac T2$:
 
-$$H_1(j\omega)=\frac1T\left[\frac{2\sin(\omega T/2)}{\omega}\right]^2.$$
+$$
+H_0(j\omega)=e^{-j\omega T/2}\,\frac{2\sin(\omega T/2)}{\omega}
+$$
 
-Dividing:
+**Step 3: the first-order hold.** The triangle of width $2T$ equals two width-$T$ pulses convolved, divided by $T$:
 
-$$\boxed{H(j\omega)=\frac{2\sin(\omega T/2)}{\omega T}\,e^{j\omega T/2}}$$
+$$
+H_1(j\omega)=\frac1T\left[\frac{2\sin(\omega T/2)}{\omega}\right]^2
+$$
+
+**Step 4: divide.** One factor of $\frac{2\sin(\omega T/2)}{\omega}$ cancels:
+
+$$
+\boxed{H(j\omega)=\frac{2\sin(\omega T/2)}{\omega T}\,e^{j\omega T/2}}
+$$
 ` + fig("bk-sm-77") + r`
-Reading the result:
-- The magnitude is one more $\frac{\sin}{\cdot}$ low-pass factor, which smooths the staircase into straight lines.
-- The phase $e^{+j\omega T/2}$ is an **advance** of $\frac T2$. The first-order hold is centred on each sample, while the zero-order hold lags by half a sample. So this filter is non-causal; in practice one accepts an extra delay of $T$.`,
+**Reading the result.**
+
+- **Magnitude:** one more $\frac{\sin}{\cdot}$ low-pass factor. It smooths the staircase into straight lines.
+- **Phase:** $e^{+j\omega T/2}$ is an **advance** of $\frac T2$. The first-order hold is centred on each sample, while the zero-order hold lags by half a sample. So this filter is non-causal; in practice an extra delay of $T$ is accepted.`,
   },
   {
     id: "bk-tan-2.1",

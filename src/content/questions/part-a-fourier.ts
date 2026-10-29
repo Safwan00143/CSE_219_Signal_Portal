@@ -1,6 +1,7 @@
 import type { Question } from "../types"
 
 const r = String.raw
+const fig = (...ids: string[]) => "\n```fig\n" + ids.join("\n") + "\n```\n"
 
 export const fourierQuestions: Question[] = [
   // ───────────────────────── Fourier series ─────────────────────────
@@ -49,29 +50,53 @@ These are real, as predicted. For comparison, $\sin2\pi f_0t$ is odd and $\sin 2
     label: "Q2(b)",
     marks: 17,
     prompt: r`Calculate the coefficients of the exponential Fourier series of $\sin 2\pi t$ and $\cos 2\pi t$. Comment on the characteristics of these signals and their coefficients. Do we need to integrate over complete cycles when calculating the coefficients? Justify.`,
-    solution: r`Both signals have period $T_0=1$, so $\omega_0=2\pi$ and $D_n=\int_{-1/2}^{1/2}g(t)e^{-j2\pi nt}dt$.
-
-**$\cos 2\pi t$.** Using orthogonality, $\int_{-1/2}^{1/2}e^{j2\pi(m-n)t}dt=\delta[m-n]$, so
+    solution: r`**Setup.** Both signals have period $T_0=1$, so $\omega_0=2\pi$, and
 
 $$
-D_n=\tfrac12\int e^{j2\pi(1-n)t}dt+\tfrac12\int e^{-j2\pi(1+n)t}dt
-\ \Rightarrow\ D_1=D_{-1}=\tfrac12,\ \text{all others } 0 .
+D_n=\int_{-1/2}^{1/2}g(t)\,e^{-j2\pi nt}\,dt
 $$
 
-**$\sin 2\pi t$.** In the same way, $D_1=\dfrac1{2j}=-\dfrac j2$ and $D_{-1}=\dfrac j2$, with all others $0$.
+**Shortcut: use Euler's formula.** A sinusoid is already a sum of two exponentials, so we can read the coefficients off directly instead of integrating.
 
+**$\cos 2\pi t$.**
+
+$$
+\cos2\pi t=\tfrac12e^{j2\pi t}+\tfrac12e^{-j2\pi t}
+$$
+
+Compare with $\sum D_ne^{j2\pi nt}$:
+
+$$
+D_1=\tfrac12,\qquad D_{-1}=\tfrac12,\qquad\text{all other }D_n=0
+$$
+
+**$\sin 2\pi t$.**
+
+$$
+\sin2\pi t=\frac{1}{2j}e^{j2\pi t}-\frac1{2j}e^{-j2\pi t}
+$$
+
+So, using $\frac1{2j}=-\frac j2$:
+
+$$
+D_1=-\tfrac j2,\qquad D_{-1}=\tfrac j2,\qquad\text{all other }D_n=0
+$$
+` + fig("q-sin-lines") + r`
 **Comments.**
 
-- $\cos$ is **even**, so its coefficients are **real** and even ($D_{-n}=D_n$).
-- $\sin$ is **odd**, so its coefficients are **purely imaginary** and odd ($D_{-n}=-D_n$).
-- Both are real signals, so $D_{-n}=D_n^*$ (conjugate symmetry): the magnitude spectra are identical lines of height $\tfrac12$ at $n=\pm1$.
-- They differ only in phase: $0$ for cos, and $\mp\pi/2$ for sin. This is because $\sin$ is $\cos$ delayed by a quarter period.
+- $\cos$ is **even**, so its coefficients are **real** and even: $D_{-n}=D_n$.
+- $\sin$ is **odd**, so its coefficients are **purely imaginary** and odd: $D_{-n}=-D_n$.
+- Both are real signals, so $D_{-n}=D_n^*$.
+- Their **magnitude spectra are identical**: two lines of height $\tfrac12$ at $n=\pm1$.
+- They differ only in **phase**: $0$ for cos, $\mp\frac\pi2$ for sin, because $\sin$ is just $\cos$ delayed by a quarter period.
 
 **Do we need complete cycles?**
 
-- *In general, yes:* the formula integrates over **one full period**. Any window of length $T_0$ works, since the integrand is periodic with period $T_0$. Integrating over less than a period breaks the orthogonality of the harmonics.
-- *With symmetry, half a period is enough:* for even signals $D_n=\frac2{T_0}\int_0^{T_0/2}g\cos n\omega_0t\,dt$, and for odd signals $D_n=-\frac{2j}{T_0}\int_0^{T_0/2}g\sin n\omega_0t\,dt$. The other half-period is a mirror image (or negative mirror image), so it contributes the same amount again.
-- For pure sinusoids, simply reading the coefficients off Euler's formula avoids integrating at all.`,
+1. **In general, yes.** The formula integrates over **one full period**. Any window of length $T_0$ works, since the integrand repeats every $T_0$. Integrating over less than a period breaks the orthogonality of the harmonics, and the answer is wrong.
+2. **With symmetry, half a period is enough.** The other half is a mirror image, so it contributes the same amount again:
+   - even signal: $D_n=\frac2{T_0}\int_0^{T_0/2}g(t)\cos(n\omega_0t)\,dt$;
+   - odd signal: $D_n=-\frac{2j}{T_0}\int_0^{T_0/2}g(t)\sin(n\omega_0t)\,dt$.
+3. **For pure sinusoids**, reading the coefficients from Euler's formula, as above, needs no integration at all.`,
   },
   {
     id: "219-2223-5d",
@@ -213,25 +238,56 @@ $$
     label: "Q1(b)",
     marks: 18,
     prompt: r`Derive and draw the Fourier spectrum of the standard rectangular signal $\Pi\!\left(\frac{t}{2B}\right)$. Comment on the nature of the frequency spectrum of practical signals. Analyse why and how sampling changes the frequency band of a practical signal.`,
-    solution: r`**Spectrum.** $\Pi(t/2B)=1$ for $|t|<B$ (width $2B$).
+    solution: r`**Part 1: the spectrum of $\Pi\!\left(\frac{t}{2B}\right)$.**
+
+The pulse is $1$ for $|t|<B$ (width $2B$) and $0$ elsewhere. Put it into the Fourier integral:
 
 $$
-G(f)=\int_{-B}^{B}e^{-j2\pi ft}dt=\frac{e^{j2\pi fB}-e^{-j2\pi fB}}{j2\pi f}=\frac{\sin 2\pi fB}{\pi f}=2B\,\frac{\sin(2\pi fB)}{2\pi fB}.
+G(f)=\int_{-B}^{B}e^{-j2\pi ft}\,dt
 $$
 
-In Lathi's notation, $\operatorname{sinc}x=\frac{\sin x}{x}$, this is $\Pi(t/2B)\leftrightarrow 2B\,\operatorname{sinc}(2\pi fB)$.
-
-*Drawing:* a real, even sinc with peak $2B$ (the area of the pulse) at $f=0$. It has zeros at $f=\pm\frac{1}{2B},\pm\frac{2}{2B},\dots$, and side-lobes decaying like $1/|f|$ with alternating sign. The phase is $0$ where $G>0$ and $\pi$ where $G<0$. The main lobe is $1/(2B)$ wide on each side, so the essential bandwidth is about $\frac{1}{2B}$ Hz. A wider pulse gives a narrower spectrum.
-
-**Nature of practical spectra.** Every practical signal lasts a finite time. A **time-limited signal cannot be band-limited**: like the rect above, its spectrum extends to $|f|\to\infty$, even though it decays. So we speak of an *essential bandwidth*, which holds most (say 99%) of the energy. Practical spectra are also conjugate-symmetric ($|G|$ even, phase odd), because the signals are real.
-
-**What sampling does.** Ideal sampling multiplies by an impulse train $\delta_{T_s}(t)$, whose transform is again an impulse train, $\frac1{T_s}\sum_n\delta(f-nf_s)$. Multiplication becomes convolution, so
+Integrate:
 
 $$
-G_s(f)=\frac1{T_s}\sum_{n=-\infty}^{\infty}G(f-nf_s).
+G(f)=\frac{e^{j2\pi fB}-e^{-j2\pi fB}}{j2\pi f}=\frac{\sin 2\pi fB}{\pi f}
 $$
 
-The spectrum is **repeated periodically** every $f_s$: the band is no longer $[-B,B]$ but copies at $nf_s\pm B$. For a strictly band-limited signal the copies do not overlap if $f_s\ge 2B$. A practical signal has infinite bandwidth, so the tails of neighbouring copies always overlap (**aliasing**): high frequencies fold back as false low frequencies. That is why we low-pass (anti-alias) filter before sampling and sample faster than the Nyquist rate.`,
+Write it in sinc form ($\operatorname{sinc}x=\frac{\sin x}{x}$):
+
+$$
+G(f)=2B\,\operatorname{sinc}(2\pi fB)
+$$
+` + fig("ft-rect") + r`
+**How to draw it.**
+
+- It is real and even, a sinc shape.
+- The peak at $f=0$ is $2B$, the area of the pulse.
+- The zeros are at $f=\pm\frac{1}{2B},\ \pm\frac{2}{2B},\ \dots$
+- The side lobes alternate in sign and shrink like $\frac{1}{|f|}$.
+- The phase is $0$ where $G>0$ and $\pi$ where $G<0$.
+- A **wider** pulse gives a **narrower** spectrum. The main lobe reaches $\frac1{2B}$, so the essential bandwidth is about $\frac{1}{2B}$ Hz.
+
+**Part 2: the spectrum of practical signals.**
+
+1. Every real signal lasts a finite time.
+2. A time-limited signal **cannot be band-limited**. Like the rectangle above, its spectrum goes on to $|f|\to\infty$, although it keeps getting smaller.
+3. So we use the **essential bandwidth**: the band that holds most (say 99%) of the energy.
+4. Real signals also have $|G(f)|$ even and the phase odd (conjugate symmetry).
+
+**Part 3: what sampling does to the band.**
+
+Sampling multiplies by an impulse train. Its transform is also an impulse train, and multiplication becomes convolution:
+
+$$
+G_s(f)=\frac1{T_s}\sum_{n=-\infty}^{\infty}G(f-nf_s)
+$$
+
+So the spectrum is **repeated every $f_s$**. The band is no longer just $[-B,B]$; there are copies at $nf_s\pm B$.
+` + fig("smp-copies") + r`
+- A strictly band-limited signal: the copies don't overlap if $f_s\ge2B$.
+- A practical signal: its tails go on forever, so neighbouring copies **always overlap a little**. This is aliasing: high frequencies come back as false low frequencies.
+` + fig("smp-time-limited") + r`
+That is why we use an anti-aliasing low-pass filter before sampling, and sample faster than the Nyquist rate.`,
   },
   {
     id: "311-2122-1a",
@@ -241,39 +297,66 @@ The spectrum is **repeated periodically** every $f_s$: the band is no longer $[-
     label: "Q1(a)",
     marks: 20,
     prompt: r`Derive the Fourier spectrum of a gate signal of width $B$. Also find the exponential Fourier series of a periodic gate signal of the same width and period $2B$. Draw all four time-domain and spectral representations. Comment on and correlate your findings.`,
-    solution: r`**Single gate** $g(t)=\Pi(t/B)$, which is $1$ for $|t|<B/2$:
+    solution: r`**Part 1: a single gate of width $B$.**
+
+$g(t)=\Pi(t/B)$ is $1$ for $|t|<\frac B2$. Its transform:
 
 $$
-G(f)=\int_{-B/2}^{B/2}e^{-j2\pi ft}dt=\frac{\sin\pi fB}{\pi f}=B\,\frac{\sin(\pi fB)}{\pi fB}.
+G(f)=\int_{-B/2}^{B/2}e^{-j2\pi ft}\,dt=\frac{\sin\pi fB}{\pi f}
 $$
 
-This is a **continuous** sinc spectrum with peak $B$ and zeros at $f=k/B$.
-
-**Periodic gate** with period $T_0=2B$ (50% duty cycle), $f_0=\frac1{2B}$:
+In sinc form:
 
 $$
-D_n=\frac1{T_0}\int_{-B/2}^{B/2}e^{-j2\pi nf_0t}dt=\frac1{2B}\,G(nf_0)=\frac12\,\frac{\sin(n\pi/2)}{n\pi/2}.
+G(f)=B\,\frac{\sin(\pi fB)}{\pi fB}
+$$
+
+- a **continuous** sinc spectrum;
+- peak $B$ at $f=0$;
+- zeros at $f=\frac1B,\ \frac2B,\ \dots$
+` + fig("q-gate") + r`
+**Part 2: the periodic gate, period $T_0=2B$.**
+
+The pulse is on for half of each period (50% duty cycle). The fundamental is $f_0=\frac1{2B}$.
+
+$$
+D_n=\frac1{T_0}\int_{-B/2}^{B/2}e^{-j2\pi nf_0t}\,dt
+$$
+
+This integral is just $G(f)$ at $f=nf_0$, so:
+
+$$
+D_n=\frac1{2B}\,G(nf_0)=\frac12\cdot\frac{\sin(n\pi/2)}{n\pi/2}
 $$
 
 | $n$ | 0 | ±1 | ±2 | ±3 | ±4 | ±5 |
 |---|---|---|---|---|---|---|
 | $D_n$ | $\tfrac12$ | $\tfrac1\pi$ | 0 | $-\tfrac1{3\pi}$ | 0 | $\tfrac1{5\pi}$ |
 
-So $g_{T_0}(t)=\tfrac12+\tfrac2\pi\left(\cos\omega_0t-\tfrac13\cos3\omega_0t+\tfrac15\cos5\omega_0t-\cdots\right)$, with $\omega_0=\pi/B$.
+So, with $\omega_0=\frac\pi B$:
 
-**The four pictures.**
+$$
+g_{T_0}(t)=\tfrac12+\tfrac2\pi\left(\cos\omega_0t-\tfrac13\cos3\omega_0t+\tfrac15\cos5\omega_0t-\cdots\right)
+$$
+
+**Part 3: the four pictures.**
 
 1. The single pulse in time.
 2. Its continuous sinc spectrum.
 3. The pulse train in time.
-4. A **line spectrum**: impulses at $f=n/(2B)$ whose heights follow the same sinc envelope, scaled by $1/T_0$.
+4. A **line spectrum**: lines at $f=\frac{n}{2B}$, with heights following the same sinc shape, scaled by $\frac1{T_0}$.
+` + fig("ft-envelope") + r`
+**Part 4: how they are related.**
 
-**Correlation.**
+1. **Repeating in time ⇔ lines in frequency.** The Fourier-series lines are **samples** of the single pulse's transform:
 
-- **Periodic in time ⇔ discrete in frequency.** The Fourier-series lines are *samples* of the single pulse's transform: $D_n=\frac1{T_0}G(nf_0)$.
-- The **envelope**, and therefore the essential bandwidth (about $1/B$), depends only on the pulse width, **not** on whether the pulse repeats. Repetition only decides *where* we sample the envelope, at spacing $f_0=1/T_0$.
-- Even harmonics vanish here because they land exactly on the sinc's zeros at multiples of $1/B$.
-- As $T_0\to\infty$ the lines merge into the continuous spectrum. That is how the Fourier transform arises from the Fourier series.`,
+$$
+D_n=\frac1{T_0}\,G(nf_0)
+$$
+
+2. **The bandwidth is the same.** The envelope, and so the essential bandwidth (about $\frac1B$), depends only on the pulse width, not on whether the pulse repeats. Repeating only decides **where** the envelope is sampled (every $f_0=\frac1{T_0}$).
+3. **Even harmonics are missing** because they land exactly on the sinc's zeros, at multiples of $\frac1B$.
+4. **As $T_0\to\infty$** the lines crowd together into the continuous spectrum. That is how the Fourier transform grows out of the Fourier series.`,
   },
   {
     id: "311-2122-3a",
@@ -283,23 +366,62 @@ So $g_{T_0}(t)=\tfrac12+\tfrac2\pi\left(\cos\omega_0t-\tfrac13\cos3\omega_0t+\tf
     label: "Q3(a)",
     marks: 20,
     prompt: r`With examples and derivations, establish the relationship between time compression and frequency expansion of a signal. Non-linear quantization uses logarithmic compression of a signal, yet it does not change the bandwidth of the signal. Why? Why is non-linear quantization necessary?`,
-    solution: r`**Scaling property.** For real $a\neq 0$:
+    solution: r`**Part 1: time compression means frequency expansion.**
+
+Start from the Fourier transform of $g(at)$, with $a$ real and $a\ne0$:
 
 $$
-\mathcal F\{g(at)\}=\int g(at)e^{-j2\pi ft}dt\overset{\tau=at}{=}\frac1{|a|}\int g(\tau)e^{-j2\pi (f/a)\tau}d\tau=\frac1{|a|}G\!\left(\frac fa\right).
+\mathcal F\{g(at)\}=\int g(at)\,e^{-j2\pi ft}\,dt
 $$
 
-- $a>1$ compresses the signal in time and **expands** its spectrum by $a$ (and lowers its height by $1/a$).
-- $0<a<1$ does the opposite.
+Substitute $\tau=at$, so $dt=\frac{d\tau}{a}$ (take $a>0$):
 
-*Example:* $\Pi(t/\tau)\leftrightarrow\tau\frac{\sin\pi f\tau}{\pi f\tau}$, whose first null is at $1/\tau$. Halve the pulse width and the first null moves to $2/\tau$, so the bandwidth doubles. *Audio example:* playing a tape at double speed compresses it in time, and every pitch goes up an octave. The product (duration × bandwidth) stays constant.
+$$
+\mathcal F\{g(at)\}=\frac1a\int g(\tau)\,e^{-j2\pi(f/a)\tau}\,d\tau=\frac1a\,G\!\left(\frac fa\right)
+$$
 
-**Why log compression does not change bandwidth.** Time compression scales the **time axis**: $t\to at$. Logarithmic (μ-law or A-law) compression scales the **amplitude** of each sample: $m\to y=\frac{\ln(1+\mu|m|/m_p)}{\ln(1+\mu)}$. The samples are still taken at the same instants and rate $f_s$, and each still becomes $n$ bits, so the sample rate, bit rate and transmission bandwidth are unchanged. (The compressor is applied to sample values; the receiver's expander undoes it.)
+In general:
 
-**Why non-linear quantization is needed.**
+$$
+g(at)\ \longleftrightarrow\ \frac1{|a|}\,G\!\left(\frac fa\right)
+$$
+` + fig("ft-scaling") + r`
+**What it means.**
 
-- A uniform quantizer has fixed noise power $\Delta^2/12$, so its SNR is proportional to the signal power. Speech is mostly low amplitude with rare peaks, so quiet talkers and quiet passages get poor SNR.
-- Compressing small amplitudes more finely and large amplitudes more coarsely gives roughly **constant SNR across a wide dynamic range**. For telephony, a log-compressed 8-bit quantizer is comparable to about 12–13 bits of uniform quantization.`,
+- $a>1$: the signal is **squeezed** in time, and the spectrum is **stretched** by $a$ (and lowered by $\frac1a$).
+- $0<a<1$: the opposite.
+- Duration × bandwidth stays the same.
+
+**Example 1 (rectangular pulse).**
+
+$$
+\Pi\!\left(\tfrac t\tau\right)\ \longleftrightarrow\ \tau\,\frac{\sin\pi f\tau}{\pi f\tau}
+$$
+
+The first zero is at $f=\frac1\tau$. Halve the width ($\tau\to\frac\tau2$) and the first zero moves to $\frac2\tau$: the bandwidth doubles.
+
+**Example 2 (audio).** Play a recording at double speed. It is compressed in time, and every pitch goes up an octave (frequencies double).
+
+**Part 2: why log compression does not change bandwidth.**
+
+- **Time compression** changes the **time axis**: $t\to at$.
+- **Logarithmic (μ-law, A-law) compression** changes the **size of each sample**:
+
+$$
+y=\frac{\ln\left(1+\mu|m|/m_p\right)}{\ln(1+\mu)}
+$$
+
+- The samples are still taken at the same instants, at the same rate $f_s$.
+- Each sample still becomes $n$ bits.
+- So the sample rate, the bit rate and the bandwidth are all unchanged. The receiver's expander simply undoes the compression.
+
+**Part 3: why non-linear quantization is needed.**
+
+1. A uniform quantizer has a fixed noise power, $\frac{\Delta^2}{12}$.
+2. So its SNR is proportional to the signal power: loud signals get good SNR, quiet ones get poor SNR.
+3. Speech is mostly quiet, with rare loud peaks. Quiet talkers would sound noisy.
+4. Non-linear quantization uses **small steps for small amplitudes** and large steps for large ones.
+5. This gives roughly **the same SNR over a wide range of loudness**. A log-compressed 8-bit telephone quantizer performs about as well as a 12–13-bit uniform one.`,
   },
   {
     id: "311-2021-3b",
@@ -336,22 +458,44 @@ $$
     label: "Q2(a)",
     marks: 24,
     prompt: r`Show that a time delay in a signal causes a linear phase shift in its spectrum. Explain what would happen to a voice signal made of many frequency components if this linear-phase property did not hold.`,
-    solution: r`**Proof.**
+    solution: r`**Proof, step 1: write the transform of the delayed signal.**
 
 $$
-\mathcal F\{g(t-t_0)\}=\int g(t-t_0)e^{-j2\pi ft}dt\overset{\tau=t-t_0}{=}e^{-j2\pi ft_0}\int g(\tau)e^{-j2\pi f\tau}d\tau=G(f)\,e^{-j2\pi ft_0}.
+\mathcal F\{g(t-t_0)\}=\int_{-\infty}^{\infty}g(t-t_0)\,e^{-j2\pi ft}\,dt
 $$
 
-The magnitude is unchanged, $|G(f)|$, and the phase gains $\theta(f)=-2\pi f t_0$, which is **linear in $f$** with slope $-2\pi t_0$, passing through the origin.
+**Step 2: substitute $\tau=t-t_0$**, so $t=\tau+t_0$ and $dt=d\tau$:
 
-**Why linear phase means "same delay for everyone".** A component $\cos(2\pi ft)$ shifted in phase by $-2\pi ft_0$ becomes $\cos 2\pi f(t-t_0)$, a delay of $t_0$. The delay of each component is $t_d(f)=-\theta(f)/(2\pi f)$. This equals $t_0$ for **every** frequency only when $\theta$ is linear (through the origin). A higher frequency needs a proportionally larger phase shift to be delayed by the same time.
+$$
+\mathcal F\{g(t-t_0)\}=\int_{-\infty}^{\infty}g(\tau)\,e^{-j2\pi f(\tau+t_0)}\,d\tau
+$$
 
-**If the phase were not linear.** Each frequency would be delayed by a different amount, $t_d(f)\neq$ const.
+**Step 3: take the constant factor outside.**
 
-- A voice signal is a sum of a fundamental and its harmonics in a precise time alignment. Shifted by different amounts, they would no longer line up, so the **waveform shape changes** (phase or delay distortion, "dispersion"). Transients such as plosives ("p", "t") get smeared, and the voice sounds blurred or echoey.
-- The ear is fairly tolerant of small phase errors in steady tones, but large delay spreads are clearly audible. In data or video transmission the same effect spreads each pulse into its neighbours (inter-symbol interference).
+$$
+\mathcal F\{g(t-t_0)\}=e^{-j2\pi ft_0}\int_{-\infty}^{\infty}g(\tau)\,e^{-j2\pi f\tau}\,d\tau=G(f)\,e^{-j2\pi ft_0}
+$$
 
-That is why a distortionless channel must have linear phase as well as a constant gain.`,
+**What changed.**
+
+- The magnitude is the same: $|G(f)|$.
+- The phase gains $\theta(f)=-2\pi f\,t_0$. This is a **straight line in $f$**, through the origin, with slope $-2\pi t_0$. ∎
+
+**Why a straight line means "everyone delayed equally".**
+
+- Take one component, $\cos(2\pi ft)$, and add the phase $-2\pi ft_0$. It becomes $\cos 2\pi f(t-t_0)$: a delay of exactly $t_0$.
+- In general a component at $f$ is delayed by $t_d(f)=-\dfrac{\theta(f)}{2\pi f}$.
+- This equals $t_0$ for **every** $f$ only when $\theta(f)$ is linear and passes through the origin.
+` + fig("fr-phase-distortion") + r`
+**If the phase were not linear (a voice signal).**
+
+1. Each frequency would be delayed by a different amount.
+2. A voice is a fundamental plus harmonics, lined up precisely in time. Shifted by different amounts, they no longer line up.
+3. So the **waveform shape changes**, even though no component got weaker. This is phase (delay) distortion, or dispersion.
+4. Sharp sounds like "p" and "t" get smeared, and the voice sounds blurred or echoey.
+5. The ear forgives small phase errors in steady tones, but large delay differences are clearly audible. In data or video links the same effect spreads each pulse into its neighbours (inter-symbol interference).
+
+That is why a distortionless channel needs **linear phase** as well as constant gain.`,
   },
   {
     id: "311-1718-1a",
@@ -361,32 +505,53 @@ That is why a distortionless channel must have linear phase as well as a constan
     label: "Q1(a)",
     marks: 18,
     prompt: r`Why are we interested in frequency-domain representations of signals? How do we obtain the spectrum from the time-domain representation (formula)? What is the difference between the spectrum of a periodic and an aperiodic signal? Explain graphically with a rectangular pulse and a periodic rectangular pulse train. Does being periodic or aperiodic affect the bandwidth? Explain with the same examples (pulse duration $\tau$).`,
-    solution: r`**Why frequency domain?**
+    solution: r`**1. Why use the frequency domain?**
 
-- LTI systems act on each frequency independently: $Y(f)=H(f)G(f)$. Convolution becomes multiplication.
-- Bandwidth, filtering, modulation and channel sharing (FDM) are all naturally described in frequency.
-- It shows how much of the band a signal occupies, and which components a channel will pass or distort.
+- An LTI system treats each frequency separately: $Y(f)=H(f)G(f)$. Convolution becomes simple multiplication.
+- Bandwidth, filtering, modulation and channel sharing are all naturally described in frequency.
+- It shows how much of the band a signal needs, and which parts a channel will pass or distort.
 
-**Formula.** For an aperiodic signal, the Fourier transform
+**2. How to get the spectrum.**
 
-$$
-G(f)=\int_{-\infty}^{\infty}g(t)e^{-j2\pi ft}dt .
-$$
-
-For a periodic signal (period $T_0$), the Fourier series coefficients
+- **Aperiodic signal:** the Fourier transform,
 
 $$
-D_n=\frac1{T_0}\int_{T_0}g(t)e^{-j2\pi nf_0t}dt .
+G(f)=\int_{-\infty}^{\infty}g(t)\,e^{-j2\pi ft}\,dt
 $$
 
-**Periodic vs aperiodic.**
+- **Periodic signal** (period $T_0$, $f_0=\frac1{T_0}$): the Fourier series coefficients,
 
-- *Rectangular pulse* $A\Pi(t/\tau)$: a **continuous** spectrum, $A\tau\,\dfrac{\sin\pi f\tau}{\pi f\tau}$.
-- *Pulse train* (same pulse, period $T_0$): a **discrete line spectrum** at multiples of $f_0=1/T_0$, with heights $D_n=\dfrac{A\tau}{T_0}\dfrac{\sin(\pi n f_0\tau)}{\pi n f_0 \tau}$. These are samples of the same sinc envelope, scaled by $1/T_0$.
+$$
+D_n=\frac1{T_0}\int_{T_0}g(t)\,e^{-j2\pi nf_0t}\,dt
+$$
 
-So periodic signals have energy only at harmonics, while aperiodic signals spread energy over a continuum.
+**3. Periodic vs aperiodic, with the rectangular pulse.**
 
-**Bandwidth.** **No.** The envelope of both spectra is the same sinc, set by the pulse width $\tau$: first null at $1/\tau$, so the essential bandwidth is about $1/\tau$ in both cases. The period only sets the *spacing* of the lines. Making $\tau$ smaller widens the bandwidth whether or not the pulse repeats.`,
+**A single pulse** $A\,\Pi(t/\tau)$ has a **continuous** spectrum:
+
+$$
+G(f)=A\tau\,\frac{\sin\pi f\tau}{\pi f\tau}
+$$
+` + fig("q-gate") + r`
+**The pulse train** (the same pulse repeated every $T_0$) has a **line spectrum**: values only at $f=nf_0$:
+
+$$
+D_n=\frac{A\tau}{T_0}\cdot\frac{\sin(\pi nf_0\tau)}{\pi nf_0\tau}
+$$
+
+These lines are **samples of the same sinc shape**, scaled by $\frac1{T_0}$.
+` + fig("ft-envelope") + r`
+So:
+
+- a periodic signal has energy **only at the harmonics**;
+- an aperiodic signal spreads its energy **over all frequencies**.
+
+**4. Does periodicity change the bandwidth? No.**
+
+- Both spectra follow the **same sinc envelope**, which is set by the pulse width $\tau$.
+- The first zero is at $f=\frac1\tau$ in both cases, so the essential bandwidth is about $\frac1\tau$ either way.
+- The period $T_0$ only sets the **spacing** of the lines.
+- Making the pulse narrower (smaller $\tau$) widens the bandwidth, whether or not it repeats.`,
   },
   {
     id: "311-1718-1b",
@@ -551,17 +716,57 @@ The impulse contains all frequencies with equal weight and zero phase, so its ba
     label: "Q6(a)",
     marks: 10,
     prompt: r`Determine the bandwidth of the following two signals, given their frequency-domain plots: (i) a single triangle spanning $-W$ to $W$ centred at $f=0$; (ii) two triangles, each of total width $2W$, centred at $\pm f_c$. What would the bandwidth be if the plots were time-domain representations instead?`,
-    solution: r`**As spectra.**
+    solution: r`**Rule to remember.** Bandwidth counts **positive frequencies only**.
 
-- **(i)** A baseband (low-pass) spectrum that is non-zero for $|f|<W$. Bandwidth counts positive frequencies only, so **$B=W$ Hz**.
-- **(ii)** A band-pass spectrum occupying $f_c-W$ to $f_c+W$ (and its mirror image). Bandwidth is the width of the occupied positive band: **$B=2W$ Hz**. This is twice the baseband value, as for any DSB-modulated signal.
+**Part 1: if the plots are spectra.**
 
-**As time signals.** Now the triangles are *pulses of finite duration*.
+**(i) One triangle from $-W$ to $W$.**
 
-- **(i)** A triangle of half-width $W$ seconds has transform $\propto\left(\frac{\sin\pi fW}{\pi fW}\right)^2$. It is time-limited, so it is **not band-limited**: strictly the bandwidth is infinite. Its first null is at $f=1/W$, so the **essential bandwidth is about $1/W$ Hz**.
-- **(ii)** Two such pulses at $\pm t_0$ give $G_{\text{ii}}(f)=G_{\text i}(f)\cdot2\cos(2\pi ft_0)$. The envelope is the same as (i), so the bandwidth is again **infinite strictly, about $1/W$ Hz essentially**. Shifting a pulse in time changes only the phase, not how wide the spectrum is.
+- This is a baseband (low-pass) spectrum.
+- It is non-zero for $|f|<W$.
+- Counting positive frequencies only:
 
-Moral: in frequency, *width* means bandwidth directly. In time, bandwidth is inversely proportional to *pulse width*.`,
+$$
+B=W\ \text{Hz}
+$$
+
+**(ii) Two triangles centred at $\pm f_c$, each $2W$ wide.**
+
+- This is a band-pass spectrum.
+- The positive part runs from $f_c-W$ to $f_c+W$.
+- Its width is
+
+$$
+B=2W\ \text{Hz}
+$$
+
+This is twice the baseband value, as for any double-sideband modulated signal.
+
+**Part 2: if the plots are time signals.** Now the triangles are pulses that last a finite time.
+
+**(i) One triangle of half-width $W$ seconds.** Its transform is
+
+$$
+G(f)\propto\left(\frac{\sin\pi fW}{\pi fW}\right)^2
+$$
+` + fig("ft-triangle") + r`
+- A pulse of finite duration is **never band-limited**, so strictly the bandwidth is infinite.
+- The first zero of $G(f)$ is at $f=\frac1W$.
+- So the **essential bandwidth is about $\frac1W$ Hz**.
+
+**(ii) Two such pulses at $\pm t_0$.** Shifting a pulse in time only multiplies its spectrum by a phase factor:
+
+$$
+G_{\text{ii}}(f)=G_{\text i}(f)\cdot2\cos(2\pi ft_0)
+$$
+
+- The envelope is the same as in (i).
+- So the bandwidth is again **infinite strictly, about $\frac1W$ Hz essentially**.
+
+**Moral.**
+
+- In frequency, the **width** of the plot *is* the bandwidth.
+- In time, the bandwidth is **inversely proportional** to the pulse width.`,
   },
   {
     id: "311-1415L4-6b",
@@ -655,18 +860,38 @@ $$
     label: "Q5(a)",
     marks: 14,
     prompt: r`How is the bandwidth of a real signal calculated? Let $\dot f(t)$ be the derivative of a real signal $f(t)$. Which of $f(t)$ and $\dot f(t)$ has the higher bandwidth? Explain.`,
-    solution: r`**Bandwidth** is the range of positive frequencies over which $|F(\omega)|$ is significant: the band edge for band-limited signals, or an essential bandwidth (energy fraction or first null) otherwise. Only positive frequencies count, because a real signal's amplitude spectrum is even.
+    solution: r`**1. How bandwidth is measured.**
 
-**Derivative.** By the differentiation property,
+- Bandwidth is the range of **positive** frequencies where $|F(\omega)|$ is significant.
+- For a band-limited signal, it is simply the band edge.
+- Otherwise we use an **essential bandwidth**: the first zero of the spectrum, or the band holding most (say 99%) of the energy.
+- Only positive frequencies count, because the amplitude spectrum of a real signal is symmetric.
+
+**2. What differentiation does to the spectrum.**
+
+The differentiation property:
 
 $$
-\dot f(t)\ \leftrightarrow\ j\omega F(\omega),\qquad |\,\mathcal F\{\dot f\}|=|\omega|\,|F(\omega)| .
+\dot f(t)\ \longleftrightarrow\ j\omega\,F(\omega)
 $$
 
-- Multiplying by $|\omega|$ **removes the DC component**, **suppresses low frequencies** and **amplifies high frequencies** in proportion to frequency.
-- So the energy of $\dot f$ is shifted toward higher frequencies, and its **essential bandwidth is larger**: **$\dot f(t)$ has the higher bandwidth**.
-- Intuitively, differentiation emphasises sharp changes, and fast changes mean high frequencies.
+So the amplitude spectrum gets multiplied by $|\omega|$:
 
-*Caveat:* if $f$ is strictly band-limited to $B$, then $\dot f$ is band-limited to the same $B$, because multiplying by $j\omega$ cannot create components where $F=0$. The *strict* band edge is the same, but the energy distribution within it moves upward.`,
+$$
+\big|\mathcal F\{\dot f\}\big|=|\omega|\,|F(\omega)|
+$$
+` + fig("fr-differentiator") + r`
+**3. Effect of multiplying by $|\omega|$.**
+
+- At $\omega=0$ it gives $0$: the **DC part is removed**.
+- Low frequencies are **made smaller**.
+- High frequencies are **made bigger**, in proportion to frequency.
+
+**4. Answer: $\dot f(t)$ has the higher bandwidth.**
+
+- The energy of $\dot f$ is pushed towards higher frequencies, so its essential bandwidth is larger.
+- Intuition: differentiation picks out **sharp changes**, and fast changes mean high frequencies.
+
+**One caution.** If $f$ is *strictly* band-limited to $B$, then $\dot f$ is also limited to $B$, because multiplying by $j\omega$ cannot create anything where $F=0$. The hard edge stays put; only the energy inside the band moves upwards.`,
   },
 ]

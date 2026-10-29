@@ -59,6 +59,22 @@ export type BookProblem = {
   solutionFigs?: string[]
 }
 
+/** A problem from the course teachers' own practice sheets, with their worked solution. */
+export type SheetProblem = {
+  /** Prefixed "sa-" (Anik Sir's sheet) or "sb-" (Ashraf Sir's sheet). */
+  id: string
+  topic: TopicSlug
+  sheet: "Anik Sir" | "Ashraf Sir"
+  /** Numbering as on the sheet, e.g. "Problem 4.3". */
+  ref: string
+  /** The sheet's short title for the problem, e.g. "Overlapping rectangles". */
+  title?: string
+  prompt: string
+  solution: string
+  promptFigs?: string[]
+  solutionFigs?: string[]
+}
+
 export type Topic = {
   slug: TopicSlug
   title: string

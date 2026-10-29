@@ -197,8 +197,10 @@ $x[n]=\alpha^nu[n]$ with $0<\alpha<1$, and $h[n]=u[n]$.
 
 $h[n-k]=u[n-k]$ is 1 for $k\le n$ (the reflected step has its edge at $k=n$).
 
-- **$n<0$:** $x[k]$ lives at $k\ge0$ and $h[n-k]$ at $k\le n<0$; no overlap, $y[n]=0$.
-- **$n\ge0$:** the overlap is $0\le k\le n$, where the product is just $\alpha^k$:
+**Case 1: $n<0$.** $x[k]$ lives at $k\ge0$ and $h[n-k]$ at $k\le n<0$. No overlap, so $y[n]=0$.
+` + fig("cc-L23-a") + r`
+**Case 2: $n\ge0$.** The overlap is $0\le k\le n$, where the product is just $\alpha^k$.
+` + fig("cc-L23-b") + r`
 
 $$
 y[n]=\sum_{k=0}^{n}\alpha^k=1+\alpha+\cdots+\alpha^n=\frac{1-\alpha^{n+1}}{1-\alpha}.
@@ -212,10 +214,17 @@ $$
 
 $x[n]=2^nu[-n]$ (non-zero for $n\le0$) and $h[n]=u[n]$.
 
-- **$n<0$:** the overlap is $k\le n$:
-$$y[n]=\sum_{k=-\infty}^{n}2^k=2^n+2^{n-1}+\cdots=2^n\cdot\frac{1}{1-\frac12}=2^{n+1}.$$
-- **$n\ge0$:** every non-zero sample of $x$ ($k\le0$) overlaps:
-$$y[n]=\sum_{k=-\infty}^{0}2^k=1+\tfrac12+\tfrac14+\cdots=2 .$$
+**Case 1: $n<0$.** The overlap is $k\le n$.
+` + fig("cc-L25-a") + r`
+$$
+y[n]=\sum_{k=-\infty}^{n}2^k=2^n+2^{n-1}+\cdots=2^n\cdot\frac{1}{1-\frac12}=2^{n+1}
+$$
+
+**Case 2: $n\ge0$.** Every non-zero sample of $x$ ($k\le0$) overlaps.
+` + fig("cc-L25-b") + r`
+$$
+y[n]=\sum_{k=-\infty}^{0}2^k=1+\tfrac12+\tfrac14+\cdots=2
+$$
 ` + fig("conv-ex25") + r`
 ### Example 2.6 — continuous exponential into an integrator
 
@@ -223,9 +232,13 @@ $x(t)=e^{-at}u(t)$ with $a>0$, and $h(t)=u(t)$.
 
 $h(t-\tau)=u(t-\tau)$ is 1 for $\tau<t$.
 
-- **$t<0$:** no overlap, $y(t)=0$.
-- **$t>0$:** the overlap is $0<\tau<t$:
-$$y(t)=\int_0^te^{-a\tau}d\tau=\left[-\frac1ae^{-a\tau}\right]_0^t=\frac1a\left(1-e^{-at}\right).$$
+**Case 1: $t<0$.** No overlap, so $y(t)=0$.
+` + fig("cc-L26-a") + r`
+**Case 2: $t>0$.** The overlap is $0<\tau<t$.
+` + fig("cc-L26-b") + r`
+$$
+y(t)=\int_0^te^{-a\tau}d\tau=\left[-\frac1ae^{-a\tau}\right]_0^t=\frac1a\left(1-e^{-at}\right)
+$$
 
 $$
 y(t)=\frac1a\left(1-e^{-at}\right)u(t).
@@ -263,10 +276,17 @@ $x(t)=e^{t}u(-t)$ and $h(t)=e^{-t}u(t)$. Here the second signal is not just a st
 
 So the overlap is $\tau\le\min(0,t)$, and on it $x(\tau)h(t-\tau)=e^{\tau}e^{-(t-\tau)}=e^{-t}e^{2\tau}$.
 
-- **$t<0$:** the overlap ends at $\tau=t$:
-$$y(t)=e^{-t}\int_{-\infty}^{t}e^{2\tau}d\tau=e^{-t}\cdot\tfrac12e^{2t}=\tfrac12e^{t}.$$
-- **$t\ge0$:** the overlap ends at $\tau=0$:
-$$y(t)=e^{-t}\int_{-\infty}^{0}e^{2\tau}d\tau=\tfrac12e^{-t}.$$
+**Case 1: $t<0$.** The overlap ends at $\tau=t$.
+` + fig("cc-Ltwo-a") + r`
+$$
+y(t)=e^{-t}\int_{-\infty}^{t}e^{2\tau}d\tau=e^{-t}\cdot\tfrac12e^{2t}=\tfrac12e^{t}
+$$
+
+**Case 2: $t\ge0$.** The overlap ends at $\tau=0$.
+` + fig("cc-Ltwo-b") + r`
+$$
+y(t)=e^{-t}\int_{-\infty}^{0}e^{2\tau}d\tau=\tfrac12e^{-t}
+$$
 
 $$
 y(t)=\tfrac12e^{-|t|},

@@ -1,13 +1,13 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { useRoute } from "@/lib/use-route"
 import { topics } from "@/content/topics"
 import { cn } from "@/lib/utils"
 
 /** Topic list for the left rail on desktop, and a disclosure on small screens. */
 export function TopicNav({ base }: { base: "/learn" | "/practice" }) {
-  const pathname = usePathname()
+  const pathname = useRoute()
   const current = topics.find((t) => pathname === `${base}/${t.slug}`)
 
   const list = (

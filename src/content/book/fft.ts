@@ -241,15 +241,45 @@ $$x(n)=\begin{cases}1,&n\text{ even}\\0,&n\text{ odd.}\end{cases}$$
 Show that
 
 $$X(k)=\begin{cases}N/2,&k=0,\ k=N/2\\0,&\text{elsewhere.}\end{cases}$$`,
-    solution: r`This is the first step of decimation in time, applied to a sequence whose odd samples are all zero.
+    solution: r`**Step 1: keep only the even samples.** The odd samples are zero, so only $n=2m$ (with $m=0,1,\dots,\frac N2-1$) contribute:
 
-Keep only the even indices, $n=2m$ with $m=0,\dots,\frac N2-1$, and use $W_N^{2mk}=W_{N/2}^{mk}$:
+$$
+X(k)=\sum_{m=0}^{N/2-1}1\cdot W_N^{2mk}
+$$
 
-$$X(k)=\sum_{m=0}^{N/2-1}W_N^{2mk}=\sum_{m=0}^{N/2-1}W_{N/2}^{mk}.$$
+**Step 2: simplify the twiddle factor.**
 
-That is the $\frac N2$-point DFT of a sequence of ones. By Problem 4.36 it equals $\frac N2$ when $k$ is a multiple of $\frac N2$ and 0 otherwise. Within $0\le k<N$, the multiples of $\frac N2$ are $k=0$ and $k=\frac N2$. $\blacksquare$
+$$
+W_N^{2mk}=e^{-j\frac{2\pi}{N}2mk}=e^{-j\frac{2\pi}{N/2}mk}=W_{N/2}^{mk}
+$$
+
+So
+
+$$
+X(k)=\sum_{m=0}^{N/2-1}W_{N/2}^{mk}
+$$
+
+**Step 3: recognise it.** This is the $\frac N2$-point DFT of a sequence of ones. By Problem 4.36:
+
+- it equals $\frac N2$ when $k$ is a multiple of $\frac N2$;
+- it equals $0$ otherwise.
+
+**Step 4: list the bins.** Between $0$ and $N-1$, the multiples of $\frac N2$ are $k=0$ and $k=\frac N2$:
+
+$$
+X(k)=\begin{cases}N/2,&k=0\ \text{or}\ k=N/2\\0,&\text{otherwise}\end{cases}\qquad\blacksquare
+$$
 ` + fig("bk-f-437") + r`
-**FFT insight.** The even-sample sum $G(k)$ is periodic in $k$ with period $\frac N2$, so it only has to be computed for half the bins. That reuse is exactly what makes the FFT fast. The same result also follows from $x(n)=\frac12\big(1+(-1)^n\big)$: the constant gives a spike at $k=0$ and $(-1)^n=e^{j\pi n}$ a spike at $k=\frac N2$.`,
+**Another way to see it.** Write the sequence as
+
+$$
+x(n)=\tfrac12\big(1+(-1)^n\big)
+$$
+
+- The constant $\frac12$ gives a spike at $k=0$.
+- $(-1)^n=e^{j\pi n}$ gives a spike at $k=\frac N2$.
+
+**FFT connection.** The even-sample sum repeats in $k$ every $\frac N2$, so it only needs computing for half the bins. That reuse is exactly what makes the FFT fast.`,
   },
   {
     id: "bk-tan-4.20",

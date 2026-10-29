@@ -1,6 +1,7 @@
 import type { Question } from "../types"
 
 const r = String.raw
+const fig = (...ids: string[]) => "\n```fig\n" + ids.join("\n") + "\n```\n"
 
 export const partBQuestions: Question[] = [
   // ───────────────────────── Sampling ─────────────────────────
@@ -12,41 +13,76 @@ export const partBQuestions: Question[] = [
     label: "Q1(c)",
     marks: 15,
     prompt: r`Let $x(t)$ be band-limited with $X(j\omega)=0$ for $|\omega|>\omega_M$. Analyse how $x(t)$ is uniquely determined by its samples $x(nT)$, $n=0,\pm1,\pm2,\dots$, if $\omega_s>2\omega_M$, where $\omega_s=\dfrac{2\pi}{T}$.`,
-    solution: r`**1. Sampling as multiplication.** Let $p(t)=\sum_n\delta(t-nT)$. Then
+    solution: r`**Step 1: sampling is multiplication by an impulse train.** Let
 
 $$
-x_p(t)=x(t)p(t)=\sum_{n}x(nT)\,\delta(t-nT).
+p(t)=\sum_n\delta(t-nT)
 $$
 
-$x_p$ contains exactly the information in the samples.
-
-**2. Spectrum of the impulse train.** $p(t)$ is periodic, and all its Fourier-series coefficients equal $\frac1T$. So
+Then
 
 $$
-P(j\omega)=\frac{2\pi}{T}\sum_k\delta(\omega-k\omega_s).
+x_p(t)=x(t)\,p(t)=\sum_{n}x(nT)\,\delta(t-nT)
 $$
 
-**3. Multiplication becomes convolution.**
+$x_p$ holds exactly the information in the samples, nothing more.
+
+**Step 2: the spectrum of the impulse train.** $p(t)$ repeats every $T$, and all its Fourier-series coefficients are $\frac1T$. So its spectrum is also an impulse train:
 
 $$
-X_p(j\omega)=\frac1{2\pi}X(j\omega)*P(j\omega)=\frac1T\sum_{k=-\infty}^{\infty}X\big(j(\omega-k\omega_s)\big).
+P(j\omega)=\frac{2\pi}{T}\sum_k\delta(\omega-k\omega_s)
 $$
 
-Convolving with an impulse simply copies $X$, so the sampled spectrum is $X$ **replicated every $\omega_s$**, scaled by $1/T$.
-
-**4. No overlap.** The copy at $k=0$ occupies $[-\omega_M,\omega_M]$ and the copy at $k=1$ starts at $\omega_s-\omega_M$. They do not overlap iff
+**Step 3: multiplication in time is convolution in frequency.**
 
 $$
-\omega_s-\omega_M>\omega_M\iff\omega_s>2\omega_M .
+X_p(j\omega)=\frac1{2\pi}\,X(j\omega)*P(j\omega)
 $$
 
-**5. Recovery.** Pass $x_p(t)$ through an ideal low-pass filter with gain $T$ and cutoff $\omega_c$, where $\omega_M<\omega_c<\omega_s-\omega_M$. It keeps only the $k=0$ copy, $T\cdot\frac1TX(j\omega)=X(j\omega)$, so the output is exactly $x(t)$. In the time domain this is the **band-limited interpolation**
+Convolving with an impulse just places a copy, so:
 
 $$
-x(t)=\sum_{n=-\infty}^{\infty}x(nT)\,\frac{\omega_cT}{\pi}\,\frac{\sin\omega_c(t-nT)}{\omega_c(t-nT)} .
+X_p(j\omega)=\frac1T\sum_{k=-\infty}^{\infty}X\big(j(\omega-k\omega_s)\big)
 $$
 
-**Uniqueness.** Two band-limited signals with the same samples have the same $X_p$. With non-overlapping copies, filtering recovers the same $X$, so they are the same signal. If $\omega_s<2\omega_M$ the copies overlap (**aliasing**) and different signals can share the same samples. The minimum rate $2\omega_M$ is the **Nyquist rate**.`,
+The sampled spectrum is **$X$ copied every $\omega_s$**, scaled by $\frac1T$.
+` + fig("smp-copies") + r`
+**Step 4: when do the copies not overlap?**
+
+- The middle copy ($k=0$) covers $[-\omega_M,\ \omega_M]$.
+- The next copy ($k=1$) starts at $\omega_s-\omega_M$.
+- They stay apart when
+
+$$
+\omega_s-\omega_M>\omega_M
+$$
+
+that is,
+
+$$
+\omega_s>2\omega_M
+$$
+
+**Step 5: get $x(t)$ back.** Use an ideal low-pass filter with:
+
+- gain $T$;
+- cutoff $\omega_c$ anywhere between $\omega_M$ and $\omega_s-\omega_M$.
+
+It keeps only the middle copy: $T\cdot\frac1T\,X(j\omega)=X(j\omega)$. So the output is exactly $x(t)$.
+` + fig("smp-ideal-lpf") + r`
+In the time domain, this filtering is the **interpolation formula**:
+
+$$
+x(t)=\sum_{n=-\infty}^{\infty}x(nT)\,\frac{\omega_cT}{\pi}\cdot\frac{\sin\omega_c(t-nT)}{\omega_c(t-nT)}
+$$
+
+**Step 6: why the samples determine $x(t)$ uniquely.**
+
+1. Two band-limited signals with the same samples have the same $x_p$, so the same $X_p$.
+2. The copies don't overlap, so filtering gives back the same $X$ from both.
+3. So the two signals are the same.
+
+If $\omega_s<2\omega_M$, the copies overlap (**aliasing**), and different signals can share the same samples. The minimum rate $2\omega_M$ is the **Nyquist rate**.`,
   },
   {
     id: "219-2223-4b",
@@ -56,25 +92,52 @@ $$
     label: "Q4(b)",
     marks: 10,
     prompt: r`A sequence $x[n]$ has Fourier transform $X(e^{j\omega})=0$ for $\dfrac{2\pi}{9}\le|\omega|\le\pi$. Determine the lowest rate at which $x[n]$ may be sampled for perfect reconstruction.`,
-    solution: r`This is **sampling of a discrete-time signal**: keep every $N$-th sample, $x_p[n]=x[n]\sum_k\delta[n-kN]$.
-
-**Spectrum of the sampled sequence.** The sampling frequency is $\omega_s=2\pi/N$, and
+    solution: r`**What "sampling a sequence" means.** Keep every $N$-th sample and set the rest to zero:
 
 $$
-X_p(e^{j\omega})=\frac1N\sum_{k=0}^{N-1}X\!\left(e^{j(\omega-k\omega_s)}\right),
+x_p[n]=x[n]\sum_k\delta[n-kN]
 $$
 
-which consists of $N$ shifted copies of $X$ inside each $2\pi$ interval.
+The question asks for the **largest** $N$, that is, the lowest sampling rate.
 
-**Condition.** $x[n]$ is band-limited to $\omega_M=\frac{2\pi}9$. The copies do not overlap iff
+**Step 1: the sampled spectrum.** The sampling frequency is $\omega_s=\frac{2\pi}N$, and
 
 $$
-\omega_s>2\omega_M\iff\frac{2\pi}{N}>\frac{4\pi}{9}\iff N<\frac92=4.5 .
+X_p(e^{j\omega})=\frac1N\sum_{k=0}^{N-1}X\!\left(e^{j(\omega-k\omega_s)}\right)
 $$
 
-So the largest integer is $N_{\max}=4$.
+So inside each $2\pi$ interval there are $N$ shifted copies of $X$.
+` + fig("smp-dt-sampling") + r`
+**Step 2: the no-overlap condition.** $x[n]$ is band-limited to $\omega_M=\frac{2\pi}9$. The copies don't overlap when
 
-**Answer.** Keep **every 4th sample**. The lowest usable sampling rate is $\tfrac14$ of the original rate, i.e. $\omega_s=\frac{2\pi}{4}=\frac\pi2$ rad/sample. With $N=5$, $\omega_s=0.4\pi<2\omega_M\approx0.444\pi$ and aliasing occurs. Reconstruction: low-pass filter $x_p[n]$ with gain $N=4$ and cutoff between $2\pi/9$ and $\pi/2-2\pi/9$.`,
+$$
+\omega_s>2\omega_M
+$$
+
+Put in the numbers:
+
+$$
+\frac{2\pi}{N}>\frac{4\pi}{9}
+$$
+
+$$
+N<\frac92=4.5
+$$
+
+**Step 3: pick the largest whole number.**
+
+$$
+N_{\max}=4
+$$
+
+**Answer.** Keep **every 4th sample**. The lowest usable rate is $\frac14$ of the original, that is, $\omega_s=\frac{2\pi}4=\frac\pi2$ rad/sample.
+
+**Check:**
+
+- $N=4$: $\omega_s=0.5\pi>2\omega_M\approx0.444\pi$. No aliasing. ✓
+- $N=5$: $\omega_s=0.4\pi<0.444\pi$. Aliasing. ✗
+
+**To reconstruct:** low-pass filter $x_p[n]$ with gain $N=4$ and a cutoff between $\frac{2\pi}9$ and $\frac\pi2-\frac{2\pi}9$.`,
   },
   {
     id: "311-1920-3",
@@ -169,25 +232,35 @@ Hence $\delta(t)\leftrightarrow1$: a flat spectrum is what an infinitely narrow 
     marks: 20,
     prompt: r`Explain the main cause of aliasing in sampling. What problems does aliasing introduce into a sampled signal? How are they compensated?`,
     alsoAsked: ["CSE 311 · 2014-15 Q2(c)"],
-    solution: r`**Cause.** Sampling replicates the spectrum every $f_s$:
+    solution: r`**1. The cause of aliasing.**
+
+Sampling repeats the spectrum every $f_s$:
 
 $$
-\bar G(f)=\frac1{T_s}\sum_nG(f-nf_s).
+\bar G(f)=\frac1{T_s}\sum_nG(f-nf_s)
 $$
 
-If $G(f)$ extends beyond $f_s/2$, which happens when the signal is not band-limited or $f_s<2B$, neighbouring copies **overlap**. This is aliasing. Its main cause is that practical signals are time-limited and therefore **not strictly band-limited**, combined with sampling below twice the highest significant frequency.
+If $G(f)$ reaches beyond $f_s/2$, neighbouring copies **overlap**. That overlap is aliasing.
+` + fig("smp-alias") + r`
+It happens for two reasons:
 
-**Problems.**
+- practical signals are time-limited, so they are **never strictly band-limited**;
+- the sampling rate is below twice the highest important frequency.
 
-1. **Loss of high-frequency content.** The tail of $G(f)$ beyond $f_s/2$ is cut off by the reconstruction filter.
-2. **Spectral folding.** The tails of neighbouring copies fall *inside* the baseband. A component at $f_s/2+\Delta f$ reappears at $f_s/2-\Delta f$, as a false low frequency ("frequency in disguise"). *Example:* sampling a 7 kHz tone at 10 kHz produces a 3 kHz tone after reconstruction. Wagon wheels appearing to spin backwards in films is the same effect.
-3. **It cannot be undone.** Once components overlap, no filter can separate the true from the aliased content.
+**2. The problems it causes.**
 
-**Compensation.**
+1. **Lost high frequencies.** The part of $G(f)$ above $f_s/2$ is cut off by the reconstruction filter.
+2. **False low frequencies (folding).** A component at $\frac{f_s}{2}+\Delta f$ comes back at $\frac{f_s}{2}-\Delta f$.
+` + fig("smp-alias-tone") + r`
+   *Example:* sample a 7 kHz tone at 10 kHz and you hear a 3 kHz tone. Wagon wheels spinning backwards in films are the same effect.
+3. **It cannot be undone.** Once the copies overlap, no filter can tell the true part from the folded part.
 
-- **Anti-aliasing filter.** Low-pass filter the signal to $B<f_s/2$ **before** sampling. We lose the components above $B$ deliberately, but nothing folds back into the band.
-- **Over-sample.** Use $f_s>2B$, typically 10–25% higher. This creates guard bands so that realisable filters with finite roll-off can be used for both anti-aliasing and reconstruction.
-- *Example:* telephone speech is band-limited to 3.4 kHz and sampled at 8 kHz rather than 6.8 kHz.`,
+**3. How it is compensated.**
+
+- **Anti-aliasing filter.** Low-pass filter the signal to $B<\frac{f_s}{2}$ **before** sampling. We lose what lies above $B$ on purpose, but nothing folds back.
+- **Oversampling.** Sample faster than $2B$, typically 10–25% more. This leaves guard bands, so real filters with a gradual roll-off can be used.
+
+*Example:* telephone speech is filtered to 3.4 kHz and sampled at 8 kHz, not 6.8 kHz.`,
   },
   {
     id: "311-2021-3a",
@@ -197,27 +270,38 @@ If $G(f)$ extends beyond $f_s/2$, which happens when the signal is not band-limi
     label: "Q3(a)",
     marks: 24,
     prompt: r`"A practical signal cannot be fully recovered from its sampled values no matter how much we increase the sampling frequency." Justify. Which phenomenon causes this, how does it distort the signal, and what do we do to minimise the distortion?`,
-    solution: r`**Justification.**
+    solution: r`**1. Why the statement is true.**
 
-- A practical signal exists for a **finite time**. A time-limited signal cannot be band-limited: its spectrum has tails extending to infinite frequency. The rect pulse, for example, has a sinc spectrum.
-- The sampling theorem guarantees perfect recovery only for band-limited signals with $f_s\ge2B$. Here $B=\infty$, so **no finite $f_s$ meets the condition**.
-- Increasing $f_s$ pushes the spectral copies further apart and makes the overlap smaller, but it never reaches exactly zero.
+1. A practical signal lasts a **finite time**.
+2. A time-limited signal **cannot be band-limited**: its spectrum has tails that go on to infinite frequency. (A rectangular pulse, for example, has a sinc spectrum.)
+3. The sampling theorem promises perfect recovery only when the signal is band-limited to $B$ and $f_s\ge2B$.
+4. Here $B=\infty$, so **no finite $f_s$ can satisfy the condition**.
+5. Raising $f_s$ moves the spectral copies further apart, so the overlap shrinks, but it never becomes exactly zero.
+` + fig("smp-time-limited") + r`
+**2. The phenomenon: aliasing.**
 
-**Phenomenon: aliasing.** In $\bar G(f)=\frac1{T_s}\sum G(f-nf_s)$, the tails of the copies at $\pm f_s$ spill into $|f|<f_s/2$.
+Sampling repeats the spectrum:
 
-**How it distorts.**
+$$
+\bar G(f)=\frac1{T_s}\sum_nG(f-nf_s)
+$$
 
-- The reconstruction low-pass filter (cutoff $f_s/2$) passes the baseband **plus** the folded tails of the neighbouring copies.
-- Components above $f_s/2$ are lost, and they reappear mirrored about $f_s/2$ as false lower frequencies.
-- The recovered waveform is therefore wrong in its high-frequency detail, and the error cannot be filtered out afterwards.
+The tails of the copies at $\pm f_s$ spill into the band $|f|<\frac{f_s}{2}$.
 
-**Minimising it.**
+**3. How it distorts the signal.**
 
-1. **Anti-aliasing low-pass filter** before the sampler, cutting off at the essential bandwidth $B$ (e.g. 3.4 kHz for speech). The truncated tail is lost, but nothing folds back.
-2. **Sample above the Nyquist rate** ($f_s>2B$) to leave guard bands, so realisable filters work.
-3. Choose $B$ so the discarded energy is negligible, e.g. 99% essential bandwidth.
+- The reconstruction filter (cutoff $\frac{f_s}{2}$) lets through the wanted band **plus** the spilled tails of the neighbouring copies.
+- Components above $\frac{f_s}{2}$ are lost from where they belong.
+- They reappear mirrored about $\frac{f_s}{2}$, as **false lower frequencies**.
+- So the fine (high-frequency) detail of the recovered waveform is wrong, and this error cannot be filtered out afterwards.
 
-What remains is a small, controlled error instead of uncontrolled aliasing.`,
+**4. How to minimise it.**
+
+1. **Anti-aliasing filter.** Low-pass filter the signal before sampling, at its essential bandwidth $B$ (e.g. 3.4 kHz for speech). The cut-off tail is lost, but nothing folds back.
+2. **Sample above the Nyquist rate**, $f_s>2B$, to leave guard bands for real filters.
+3. **Choose $B$ sensibly**, e.g. the 99% energy bandwidth, so the discarded energy is negligible.
+
+The result is a small, controlled error instead of uncontrolled aliasing.`,
   },
   {
     id: "311-1415L4-8a",
@@ -228,23 +312,41 @@ What remains is a small, controlled error instead of uncontrolled aliasing.`,
     marks: 15,
     prompt: r`A signal $g(t)\leftrightarrow G(f)$ is sampled by an impulse train: $g_\delta(t)=g(t)\sum_n\delta(t-nT_s)=\sum_n g(nT_s)\delta(t-nT_s)$. Find the Fourier transform of $g_\delta(t)$, draw $G_\delta(f)$, and explain the sampling theorem from the diagram.`,
     alsoAsked: ["CSE 311 · 2010-11 Q6(c)"],
-    solution: r`**Derivation.**
+    solution: r`**Step 1: write the impulse train as a Fourier series.** It repeats every $T_s$, and every coefficient is $\frac1{T_s}$ ($f_s=\frac1{T_s}$):
 
 $$
-\sum_n\delta(t-nT_s)=\frac1{T_s}\sum_ne^{j2\pi nf_st}\ \Rightarrow\ g_\delta(t)=\frac1{T_s}\sum_ng(t)e^{j2\pi nf_st}\ \Rightarrow\ G_\delta(f)=\frac1{T_s}\sum_{n=-\infty}^{\infty}G(f-nf_s).
+\sum_n\delta(t-nT_s)=\frac1{T_s}\sum_ne^{j2\pi nf_st}
 $$
 
-**Diagram.** Copies of $G(f)$, each scaled by $1/T_s$, centred at $0,\pm f_s,\pm2f_s,\dots$
+**Step 2: multiply by $g(t)$.**
 
-**Sampling theorem from the picture.**
+$$
+g_\delta(t)=\frac1{T_s}\sum_ng(t)\,e^{j2\pi nf_st}
+$$
 
-- Suppose $G(f)$ is band-limited to $B$. The central copy spans $[-B,B]$ and the next starts at $f_s-B$.
-- If $f_s\ge2B$ they **do not overlap**. An ideal low-pass filter of bandwidth $B$ then passes only the central copy $\frac1{T_s}G(f)$, so the output is $\frac1{T_s}g(t)$: **$g$ is recovered exactly**.
-- If $f_s<2B$ the copies overlap and $G$ cannot be isolated (aliasing).
+**Step 3: take the Fourier transform.** Each $e^{j2\pi nf_st}$ shifts the spectrum by $nf_s$:
 
-**Statement:** a signal band-limited to $B$ Hz is uniquely determined by samples taken at least $2B$ times per second.
+$$
+G_\delta(f)=\frac1{T_s}\sum_{n=-\infty}^{\infty}G(f-nf_s)
+$$
 
-**2010-11 Q6(c)** (sampled at exactly $2B$, through an ideal LPF of bandwidth $B$): the filter keeps only the $n=0$ term, $\frac1{T_s}F(\omega)=2B\,F(\omega)$. So the output is $2B\,f(t)$, **proportional to $f(t)$**.`,
+**Step 4: the diagram.** Copies of $G(f)$, each scaled by $\frac1{T_s}$, centred at $0,\ \pm f_s,\ \pm2f_s,\ \dots$
+` + fig("smp-copies") + r`
+**Step 5: the sampling theorem from the picture.**
+
+1. Let $G(f)$ be band-limited to $B$. The middle copy covers $[-B,B]$.
+2. The next copy starts at $f_s-B$.
+3. If $f_s\ge2B$, the copies **do not overlap**.
+4. Then an ideal low-pass filter of bandwidth $B$ keeps only the middle copy, $\frac1{T_s}G(f)$. The output is $\frac1{T_s}g(t)$: **$g$ is recovered exactly**.
+5. If $f_s<2B$, the copies overlap (aliasing), and $G$ cannot be separated.
+` + fig("smp-alias") + r`
+**Statement:** a signal band-limited to $B$ Hz is completely fixed by samples taken at least $2B$ times per second.
+
+**2010-11 Q6(c).** Sample at exactly $2B$ and pass through an ideal low-pass filter of bandwidth $B$:
+
+- the filter keeps only the $n=0$ copy, $\frac1{T_s}F(\omega)$;
+- with $T_s=\frac1{2B}$ that is $2B\,F(\omega)$;
+- so the output is $2B\,f(t)$, **proportional to $f(t)$**.`,
   },
 
   // ───────────────────────── DTFT / DFT ─────────────────────────
@@ -272,55 +374,87 @@ $$
 | $g(t)$ | 1 | 2 | 3 | 4 |
 
 (iv) What considerations should guide the choice of $T_s$ and $T_0$? *(6)*`,
-    solution: r`**(i) Derivation.** For $g(t)$ that is zero outside $[0,T_0]$:
+    solution: r`**(i) Derivation.**
+
+$g(t)$ is zero outside $[0,T_0]$, so
 
 $$
-G(f)=\int_0^{T_0}g(t)e^{-j2\pi ft}dt\approx\sum_{k=0}^{N_0-1}g(kT_s)e^{-j2\pi fkT_s}\,T_s ,
+G(f)=\int_0^{T_0}g(t)\,e^{-j2\pi ft}\,dt
 $$
 
-replacing the integral by a Riemann sum with step $T_s$ ($N_0T_s=T_0$). Evaluate it only at the discrete frequencies $f=qf_0$:
+Replace the integral by a sum of rectangles of width $T_s$, using the samples at $t=kT_s$ ($N_0T_s=T_0$):
 
 $$
-G(qf_0)\approx\sum_{k=0}^{N_0-1}\underbrace{T_sg(kT_s)}_{g_k}\,e^{-jq\,(2\pi f_0T_s)\,k}=\sum_{k=0}^{N_0-1}g_ke^{-jq\Omega_0k}=G_q .
+G(f)\approx\sum_{k=0}^{N_0-1}g(kT_s)\,e^{-j2\pi fkT_s}\,T_s
 $$
 
-**(ii) Why $f_0=1/T_0$.**
-
-- *Sampling in frequency.* Taking only the values $G(qf_0)$ multiplies the spectrum by an impulse train with spacing $f_0$. By duality this makes the time signal **periodic** with period $1/f_0$.
-- *No overlap in time.* The time signal has duration $T_0$, so for its periodic copies not to overlap (no time-aliasing) we need $1/f_0\ge T_0$. The DFT uses exactly one period, $1/f_0=T_0$.
-- *Self-consistency.* $G_q$ must also be periodic in $q$ with period $N_0$ (sampling in time), so $\Omega_0N_0=2\pi$. That gives $2\pi f_0T_sN_0=2\pi$, so $f_0=\dfrac1{N_0T_s}=\dfrac1{T_0}$.
-
-So the **frequency resolution is the reciprocal of the record length.**
-
-**(iii) The numbers.** The samples are 1 s apart, so $T_s=1$ s and $N_0=4$, giving $T_0=N_0T_s=4$ s. Then
+Now evaluate only at the frequencies $f=qf_0$, and name $g_k=T_s\,g(kT_s)$:
 
 $$
-f_0=\frac1{T_0}=0.25\ \text{Hz},\qquad\Omega_0=2\pi f_0T_s=\frac\pi2,\qquad e^{-j\Omega_0}=-j,\qquad g_k=T_sg(kT_s)=\{1,2,3,4\}.
+G(qf_0)\approx\sum_{k=0}^{N_0-1}g_k\,e^{-jq(2\pi f_0T_s)k}
+$$
+
+With $\Omega_0=2\pi f_0T_s$ this is exactly the given formula:
+
+$$
+G_q=\sum_{k=0}^{N_0-1}g_k\,e^{-jq\Omega_0k}
+$$
+
+**(ii) Why $f_0=\frac1{T_0}$.**
+
+1. We know $G$ only at $f=0,f_0,2f_0,\dots$. Sampling in frequency makes the time signal **repeat** with period $\frac1{f_0}$.
+2. Our signal lasts $T_0$. For the repeated copies not to overlap, we need $\frac1{f_0}\ge T_0$. The DFT uses exactly one period: $\frac1{f_0}=T_0$.
+3. The same comes out of the formula. $G_q$ must repeat after $N_0$ values of $q$, so
+
+$$
+\Omega_0N_0=2\pi\ \Rightarrow\ 2\pi f_0T_sN_0=2\pi\ \Rightarrow\ f_0=\frac1{N_0T_s}=\frac1{T_0}
+$$
+
+So the **frequency spacing is one over the record length.**
+
+**(iii) The numbers.**
+
+The samples are 1 s apart, so $T_s=1$ s, $N_0=4$ and $T_0=4$ s. Then:
+
+- $f_0=\frac1{T_0}=0.25$ Hz
+- $\Omega_0=2\pi f_0T_s=\frac\pi2$, so $e^{-j\Omega_0}=-j$
+- $g_k=T_s\,g(kT_s)=\{1,2,3,4\}$
+
+So $G_q=\sum_{k=0}^{3}g_k(-j)^{qk}$. Work out each value:
+
+$$
+G_0=1+2+3+4=10
 $$
 
 $$
-G_q=\sum_{k=0}^{3}g_k(-j)^{qk}:
-\qquad\begin{aligned}
-G_0&=1+2+3+4=10\\
-G_1&=1-2j-3+4j=-2+2j\\
-G_2&=1-2+3-4=-2\\
-G_3&=1+2j-3-4j=-2-2j
-\end{aligned}
+G_1=1+2(-j)+3(-1)+4(j)=-2+2j
 $$
 
+$$
+G_2=1-2+3-4=-2
+$$
+
+$$
+G_3=1+2(j)+3(-1)+4(-j)=-2-2j
+$$
+` + fig("dft-example") + r`
 | $q$ | 0 | 1 | 2 | 3 |
 |---|---|---|---|---|
-| $f=qf_0$ | 0 Hz | 0.25 Hz | 0.5 Hz | 0.75 Hz (≡ −0.25 Hz) |
+| $f=qf_0$ | 0 Hz | 0.25 Hz | 0.5 Hz | 0.75 Hz (same as −0.25 Hz) |
 | $G(f)\approx G_q$ | 10 | $-2+2j$ | $-2$ | $-2-2j$ |
 | $\lvert G_q\rvert$ | 10 | $2\sqrt2$ | 2 | $2\sqrt2$ |
 
-Because $g$ is real, $G_3=G_1^*$: bin 3 is the negative-frequency partner of bin 1. The highest frequency represented is $\frac1{2T_s}=0.5$ Hz.
+- $g$ is real, so $G_3=G_1^*$: bin 3 is the negative-frequency partner of bin 1.
+- The highest frequency shown is $\frac1{2T_s}=0.5$ Hz.
 
 **(iv) Choosing $T_s$ and $T_0$.**
 
-- **$T_s\le\frac1{2B}$** (sampling above the Nyquist rate) to avoid aliasing. For non-band-limited signals choose $T_s$ small enough that $G(f)$ is negligible beyond $\frac1{2T_s}$, and use an anti-aliasing filter.
-- **$T_0$ long enough** to (a) cover the whole signal, so truncation does not cause leakage, and (b) give the required **frequency resolution** $f_0=1/T_0$. For long signals, windowing reduces leakage from truncation.
-- **$N_0=T_0/T_s$** should be a power of 2 for the radix-2 FFT. If needed, **zero-pad**: this increases $T_0$ and gives finer spectral samples without changing the underlying spectrum.`,
+- **$T_s$ small enough:** $T_s\le\frac1{2B}$, to avoid aliasing. If the signal is not band-limited, make $T_s$ small enough that $G(f)$ is negligible beyond $\frac1{2T_s}$, and use an anti-aliasing filter.
+- **$T_0$ long enough:**
+  - to cover the whole signal, so cutting it off does not cause leakage;
+  - to give the needed frequency spacing, $f_0=\frac1{T_0}$.
+- **$N_0=\frac{T_0}{T_s}$ a power of 2**, for the radix-2 FFT. If needed, **zero-pad**: this lengthens $T_0$ and gives finer spectral samples without changing the spectrum itself.
+` + fig("dft-samples-dtft"),
   },
 
   // ───────────────────────── FFT ─────────────────────────
@@ -332,39 +466,65 @@ Because $g$ is real, $G_3=G_1^*$: bin 3 is the negative-frequency partner of bin
     label: "Q4(c)",
     marks: 15,
     prompt: r`Compare the computational complexities of the discrete Fourier transform and the radix-2 fast Fourier transform.`,
-    solution: r`**Direct DFT.**
+    solution: r`**1. Cost of the direct DFT.**
 
 $$
-X[k]=\sum_{n=0}^{N-1}x[n]W_N^{kn},\quad W_N=e^{-j2\pi/N}.
+X[k]=\sum_{n=0}^{N-1}x[n]\,W_N^{kn},\qquad W_N=e^{-j2\pi/N}
 $$
 
-Each of the $N$ outputs needs $N$ complex multiplications and $N-1$ complex additions, so
+- Each output $X[k]$ needs $N$ multiplications and $N-1$ additions.
+- There are $N$ outputs.
 
 $$
-\text{DFT: } N^2\ \text{complex mults},\quad N(N-1)\ \text{complex adds}\ \Rightarrow\ O(N^2).
+\text{DFT: } N^2\ \text{complex multiplications}
 $$
 
-**Radix-2 FFT** ($N=2^m$). Split $x[n]$ into even- and odd-indexed halves:
-
 $$
-X[k]=G[k]+W_N^kH[k],\qquad X[k+\tfrac N2]=G[k]-W_N^kH[k],\quad 0\le k<\tfrac N2 ,
+\text{and } N(N-1)\ \text{complex additions, so } O(N^2)
 $$
 
-where $G$ and $H$ are $\frac N2$-point DFTs. Each level of splitting costs $\frac N2$ multiplications (one twiddle $W_N^k$ per butterfly, shared by the $\pm$ pair) and $N$ additions. So
+**2. Cost of the radix-2 FFT** ($N=2^m$).
+
+Split $x[n]$ into its even and odd samples. If $G$ and $H$ are their $\frac N2$-point DFTs, then for $0\le k<\frac N2$:
 
 $$
-M(N)=2M\!\left(\tfrac N2\right)+\tfrac N2\ \Rightarrow\ M(N)=\tfrac N2\log_2N,\qquad A(N)=N\log_2N .
+X[k]=G[k]+W_N^k\,H[k]
 $$
 
-That is $\log_2N$ stages of $N/2$ butterflies each: $O(N\log N)$.
+$$
+X\!\left[k+\tfrac N2\right]=G[k]-W_N^k\,H[k]
+$$
 
-| $N$ | DFT mults $N^2$ | FFT mults $\frac N2\log_2N$ | speed-up |
+- One multiplication $W_N^kH[k]$ serves **both** outputs (this pair is one "butterfly").
+- So one level of splitting costs $\frac N2$ multiplications and $N$ additions.
+- Keep splitting: $\log_2N$ levels in all.
+
+$$
+\text{FFT: }\ \tfrac N2\log_2N\ \text{multiplications}
+$$
+
+$$
+\text{and } N\log_2N\ \text{additions, so } O(N\log N)
+$$
+` + fig("fft-cost") + r`
+**3. Comparison.**
+
+| $N$ | DFT ($N^2$) | FFT ($\frac N2\log_2N$) | speed-up |
 |---|---|---|---|
 | 8 | 64 | 12 | 5× |
-| 1024 | 1 048 576 | 5 120 | ≈205× |
-| 65 536 ($2^{16}$) | ≈4.3×10⁹ | 524 288 | ≈8200× |
+| 1024 | 1 048 576 | 5 120 | about 205× |
+| 65 536 | about $4.3\times10^9$ | 524 288 | about 8200× |
 
-**Where the saving comes from:** symmetry, $W_N^{k+N/2}=-W_N^k$, and periodicity, $W_N^{k+N}=W_N^k$, of the twiddle factors, so the same products are reused instead of recomputed. Memory is $O(N)$ with in-place computation; the cost is a bit-reversed ordering of the input (DIT) or output (DIF). The FFT computes **exactly** the same values as the DFT; it is not an approximation.`,
+**4. Where the saving comes from.**
+
+- **Symmetry:** $W_N^{k+N/2}=-W_N^k$. So one product gives two outputs.
+- **Periodicity:** $W_N^{k+N}=W_N^k$. So the same products are reused, not recomputed.
+
+**5. Other points.**
+
+- Memory is $O(N)$, because the butterflies can work in place.
+- The price is reordering: bit-reversed input (DIT) or bit-reversed output (DIF).
+- The FFT gives **exactly** the same numbers as the DFT. It is not an approximation, just a faster way to compute it.`,
   },
   {
     id: "311-1718-3b",
@@ -374,42 +534,61 @@ That is $\log_2N$ stages of $N/2$ butterflies each: $O(N\log N)$.
     label: "Q3(b)",
     marks: 24,
     prompt: r`Given samples $\{g_0,\dots,g_{N-1}\}$, the DFT is $G_k=\sum_{n=0}^{N-1}g_ne^{-j\frac{2\pi}{N}kn}$. Formulate a **decimation-in-frequency** FFT, draw the complete signal-flow graph for an 8-point DFT, and explain using it what *bit-reversed order* means when in-place computation is used.`,
-    solution: r`**Formulation (DIF).** Split the **time** sequence into first and second halves, then separate **even and odd outputs**:
+    solution: r`**Step 1: split the time samples into a first half and a second half.**
+
+With $W_N=e^{-j2\pi/N}$, and using $W_N^{kN/2}=(-1)^k$:
 
 $$
-G_k=\sum_{n=0}^{N/2-1}\Big[g_n+(-1)^k\,g_{n+N/2}\Big]W_N^{kn},\qquad (W_N^{kN/2}=(-1)^k).
+G_k=\sum_{n=0}^{N/2-1}\Big[g_n+(-1)^k\,g_{n+N/2}\Big]W_N^{kn}
 $$
 
-- **Even outputs** $k=2r$: $W_N^{2rn}=W_{N/2}^{rn}$, so
-$$G_{2r}=\sum_{n=0}^{N/2-1}a_n\,W_{N/2}^{rn},\qquad a_n=g_n+g_{n+N/2}.$$
-- **Odd outputs** $k=2r+1$:
-$$G_{2r+1}=\sum_{n=0}^{N/2-1}b_n\,W_{N/2}^{rn},\qquad b_n=\big(g_n-g_{n+N/2}\big)W_N^{\,n}.$$
+**Step 2: separate even and odd outputs.**
 
-So one $N$-point DFT becomes two $\frac N2$-point DFTs, after $\frac N2$ **DIF butterflies**:
+- **Even outputs**, $k=2r$. Then $(-1)^k=1$ and $W_N^{2rn}=W_{N/2}^{rn}$:
 
 $$
-a_n=g_n+g_{n+N/2},\qquad b_n=(g_n-g_{n+N/2})\,W_N^{n}.
+G_{2r}=\sum_{n=0}^{N/2-1}a_n\,W_{N/2}^{rn},\qquad a_n=g_n+g_{n+N/2}
 $$
 
-Here the twiddle multiplies **after** the subtraction; in DIT it comes before. Repeat on each half until 2-point DFTs remain: $\log_2N$ stages.
+- **Odd outputs**, $k=2r+1$. Then $(-1)^k=-1$:
 
-**8-point flow graph (3 stages, 4 butterflies each).**
+$$
+G_{2r+1}=\sum_{n=0}^{N/2-1}b_n\,W_{N/2}^{rn},\qquad b_n=\big(g_n-g_{n+N/2}\big)W_N^{\,n}
+$$
 
-| Stage | butterfly pairs (indices into the working array) | twiddles on the "−" branch |
+**Step 3: the DIF butterfly.** So one $N$-point DFT becomes **two $\frac N2$-point DFTs**. Each pair of inputs goes through one butterfly:
+
+$$
+a_n=g_n+g_{n+N/2}
+$$
+
+$$
+b_n=\big(g_n-g_{n+N/2}\big)W_N^{n}
+$$
+
+The twiddle multiplies **after** the subtraction (in DIT it comes before). Repeat on each half until only 2-point DFTs are left. That takes $\log_2N$ stages.
+
+**Step 4: the 8-point flow graph.** There are 3 stages, each with 4 butterflies.
+` + fig("fft-dif-8") + r`
+| stage | pairs that meet | twiddles on the "−" branch |
 |---|---|---|
-| 1 | (0,4) (1,5) (2,6) (3,7) | $W_8^0,W_8^1,W_8^2,W_8^3$ |
-| 2 | (0,2) (1,3) and (4,6) (5,7) | $W_8^0,W_8^2$ in each half (i.e. $W_4^0,W_4^1$) |
+| 1 | (0,4) (1,5) (2,6) (3,7) | $W_8^0,\ W_8^1,\ W_8^2,\ W_8^3$ |
+| 2 | (0,2) (1,3), and (4,6) (5,7) | $W_8^0,\ W_8^2$ in each half |
 | 3 | (0,1) (2,3) (4,5) (6,7) | $W_8^0=1$ |
 
-Inputs $g_0\dots g_7$ enter in natural order on the left. Each butterfly takes two nodes $p,q$ and produces $p+q$ (top) and $(p-q)W$ (bottom).
+The inputs $g_0,\dots,g_7$ go in on the left in natural order. Each butterfly takes two values $p,q$ and gives $p+q$ on top and $(p-q)W$ below.
 
-**Output order and bit reversal.** The outputs leave in the order
+**Step 5: the output order.** The outputs come out as
 
 $$
-G_0,\ G_4,\ G_2,\ G_6,\ G_1,\ G_5,\ G_3,\ G_7 .
+G_0,\ G_4,\ G_2,\ G_6,\ G_1,\ G_5,\ G_3,\ G_7
 $$
 
-With **in-place computation**, each butterfly overwrites the two memory cells it read, so no extra array is needed and results stay at the positions where the flow graph produces them. Write the memory position in binary and reverse its bits to get the index of the $G_k$ stored there:
+**Step 6: what "in-place" and "bit-reversed" mean.**
+
+- **In-place:** each butterfly writes its two results back into the same two memory cells it read from. No extra array is needed.
+- So each result stays where the flow graph produces it.
+- Write the memory position in binary and reverse the bits. That gives the index $k$ of the $G_k$ stored there:
 
 | position | binary | reversed | stored |
 |---|---|---|---|
@@ -422,7 +601,13 @@ With **in-place computation**, each butterfly overwrites the two memory cells it
 | 6 | 110 | 011 | $G_3$ |
 | 7 | 111 | 111 | $G_7$ |
 
-**Why:** the first stage separates even from odd $k$ (the last bit of $k$ decides the top or bottom half), the next stage separates by the second-to-last bit, and so on. The least significant bit of $k$ ends up deciding the *most* significant bit of the position. A final bit-reversal permutation restores natural order. DIT is the mirror image: bit-reversed input, natural-order output.`,
+**Why the bits get reversed.**
+
+1. Stage 1 sends even $k$ to the top half and odd $k$ to the bottom half. So the **last** bit of $k$ decides the **first** bit of the position.
+2. Stage 2 does the same with the second-to-last bit, and so on.
+3. So the bits of $k$ appear in the position in reverse order.
+
+A final reordering puts the outputs back in natural order. DIT is the mirror image: bit-reversed input, natural-order output.`,
   },
   {
     id: "311-1415L4-7c",
@@ -603,34 +788,55 @@ $$
     label: "Q4(a)",
     marks: 10,
     prompt: r`For a general continuous-time signal $x(t)$, establish a relation between its Laplace and Fourier transforms.`,
-    solution: r`**Definitions.**
+    solution: r`**Step 1: write both definitions side by side.**
 
 $$
-X(s)=\int_{-\infty}^{\infty}x(t)e^{-st}dt,\qquad X(j\omega)=\int_{-\infty}^{\infty}x(t)e^{-j\omega t}dt .
+X(s)=\int_{-\infty}^{\infty}x(t)\,e^{-st}\,dt
 $$
 
-**Relation 1 — on the $j\omega$ axis.** Put $s=j\omega$ ($\sigma=0$):
-
 $$
-X(s)\big|_{s=j\omega}=X(j\omega),
+X(j\omega)=\int_{-\infty}^{\infty}x(t)\,e^{-j\omega t}\,dt
 $$
 
-valid **when the ROC contains the $j\omega$ axis**. The Fourier transform is the Laplace transform evaluated along the imaginary axis.
+The only difference is $s$ versus $j\omega$.
 
-**Relation 2 — off the axis.** For $s=\sigma+j\omega$:
+**Step 2, relation 1: on the $j\omega$-axis.** Put $s=j\omega$ (that is, $\sigma=0$):
 
 $$
-X(\sigma+j\omega)=\int_{-\infty}^{\infty}\big[x(t)e^{-\sigma t}\big]e^{-j\omega t}dt=\mathcal F\big\{x(t)e^{-\sigma t}\big\}.
+X(s)\Big|_{s=j\omega}=X(j\omega)
 $$
 
-The Laplace transform is the **Fourier transform of $x(t)$ weighted by a real exponential $e^{-\sigma t}$**. The ROC is the set of $\sigma$ for which this weighted signal is absolutely integrable.
+This is valid **when the ROC contains the $j\omega$-axis**. The Fourier transform is the Laplace transform read along the imaginary axis.
+` + fig("lap-splane") + r`
+**Step 3, relation 2: off the axis.** Write $s=\sigma+j\omega$ and split the exponential, $e^{-st}=e^{-\sigma t}e^{-j\omega t}$:
 
-**Consequences.**
+$$
+X(\sigma+j\omega)=\int_{-\infty}^{\infty}\big[x(t)\,e^{-\sigma t}\big]\,e^{-j\omega t}\,dt
+$$
 
-- Signals with no Fourier transform can still have a Laplace transform. *Example:* $e^{2t}u(t)$ has $X(s)=\frac1{s-2}$ for $\operatorname{Re}\{s\}>2$, because the weight $e^{-\sigma t}$ with $\sigma>2$ tames the growth.
-- If the ROC excludes the $j\omega$ axis, the Fourier transform does not exist, even though the formula $X(j\omega)$ can still be written down.
-- For an LTI system, $H(j\omega)=H(s)|_{s=j\omega}$ is the frequency response; this exists iff the system is stable.
-- Inverse: $x(t)=\frac1{2\pi j}\int_{\sigma-j\infty}^{\sigma+j\infty}X(s)e^{st}ds$ follows by inverting $\mathcal F\{x e^{-\sigma t}\}$ and multiplying by $e^{\sigma t}$.`,
+The bracket is just a new signal, so this is a Fourier transform:
+
+$$
+X(\sigma+j\omega)=\mathcal F\big\{x(t)\,e^{-\sigma t}\big\}
+$$
+
+**In words:** the Laplace transform is the **Fourier transform of $x(t)$ after multiplying it by $e^{-\sigma t}$**. The ROC is the set of $\sigma$ for which $x(t)e^{-\sigma t}$ is absolutely integrable.
+
+**Step 4: what follows.**
+
+1. **Some signals have a Laplace transform but no Fourier transform.** *Example:* $e^{2t}u(t)$ grows, so it has no Fourier transform. But with $\sigma>2$, the factor $e^{-\sigma t}$ tames the growth:
+
+$$
+X(s)=\frac{1}{s-2},\qquad\operatorname{Re}\{s\}>2
+$$
+
+2. **If the ROC misses the $j\omega$-axis, there is no Fourier transform**, even though you can still write the formula $X(j\omega)$.
+3. **For an LTI system**, $H(j\omega)=H(s)\big|_{s=j\omega}$ is the frequency response. It exists exactly when the system is stable.
+4. **The inverse.** Invert $\mathcal F\{x\,e^{-\sigma t}\}$, then multiply by $e^{\sigma t}$:
+
+$$
+x(t)=\frac1{2\pi j}\int_{\sigma-j\infty}^{\sigma+j\infty}X(s)\,e^{st}\,ds
+$$`,
   },
 
   // ───────────────────────── z-transform ─────────────────────────
@@ -665,21 +871,38 @@ $$
     label: "Q3(a)",
     marks: 10,
     prompt: r`A discrete-time signal is $x[n]=a^n$ for $0\le n\le N-1$ and $0$ otherwise. Show that the region of convergence of its z-transform does not include the origin.`,
-    solution: r`$$
-X(z)=\sum_{n=0}^{N-1}a^nz^{-n}=\frac{1-a^Nz^{-N}}{1-az^{-1}}=\frac{1}{z^{N-1}}\,\frac{z^N-a^N}{z-a}.
+    solution: r`**Step 1: write the z-transform.** The sequence has only $N$ non-zero samples, so the sum is finite:
+
+$$
+X(z)=\sum_{n=0}^{N-1}a^n\,z^{-n}
 $$
 
-**Convergence.** It is a *finite* sum, so it converges wherever each term is finite. Each term $a^nz^{-n}$ is finite for every $z\neq0$, but for $n\ge1$ the term $a^n/z^n\to\infty$ as $z\to0$. So the **ROC is the entire z-plane except $z=0$**.
+As a geometric series:
 
-**Poles and zeros confirm it.**
+$$
+X(z)=\frac{1-a^Nz^{-N}}{1-az^{-1}}=\frac{1}{z^{N-1}}\cdot\frac{z^N-a^N}{z-a}
+$$
 
-- The zeros of $z^N-a^N$ are $z_k=a\,e^{j2\pi k/N}$, $k=0,\dots,N-1$.
-- The $k=0$ zero, at $z=a$, **cancels** the apparent pole at $z=a$. So there is no pole at $z=a$.
-- What remains is the factor $z^{-(N-1)}$: a **pole of order $N-1$ at $z=0$**.
+**Step 2: where does it converge?**
 
-A pole cannot lie inside an ROC, so **the origin is excluded** (for $N\ge2$, $a\neq0$).
+- It is a **finite** sum, so it converges wherever every term is finite.
+- Each term $a^nz^{-n}=\dfrac{a^n}{z^n}$ is finite for every $z\ne0$.
+- But for $n\ge1$, $\dfrac{a^n}{z^n}\to\infty$ as $z\to0$.
 
-**General rule.** A finite-length sequence that is non-zero for some $n>0$ (right of the origin) has a pole at $z=0$, so its ROC excludes $z=0$. If it is non-zero for some $n<0$, it excludes $z=\infty$.`,
+So the **ROC is the whole z-plane except $z=0$**.
+
+**Step 3: confirm with poles and zeros.**
+
+1. The zeros of $z^N-a^N$ are $z_k=a\,e^{j2\pi k/N}$, for $k=0,\dots,N-1$: $N$ points equally spaced on the circle $|z|=|a|$.
+2. The $k=0$ zero sits at $z=a$ and **cancels** the apparent pole there. So there is no pole at $z=a$.
+3. What remains is the factor $\frac1{z^{N-1}}$: a **pole of order $N-1$ at $z=0$**.
+` + fig("z-finite") + r`
+A pole can never be inside an ROC, so **the origin is excluded** (for $N\ge2$ and $a\ne0$).
+
+**General rule.**
+
+- A finite sequence with any non-zero sample at $n>0$ has a pole at $z=0$, so its ROC excludes $z=0$.
+- A finite sequence with any non-zero sample at $n<0$ has a pole at infinity, so its ROC excludes $z=\infty$.`,
   },
   {
     id: "219-2223-3b",
@@ -689,25 +912,53 @@ A pole cannot lie inside an ROC, so **the origin is excluded** (for $N\ge2$, $a\
     label: "Q3(b)",
     marks: 10,
     prompt: r`Derive the contour-integral formula for the inverse z-transform.`,
-    solution: r`**1. z-transform as a DTFT.** Write $z=re^{j\omega}$, with $r$ chosen so the circle $|z|=r$ lies in the ROC:
+    solution: r`**Step 1: see the z-transform as a DTFT.** Write $z=re^{j\omega}$, with the circle $|z|=r$ inside the ROC:
 
 $$
-X(re^{j\omega})=\sum_nx[n]\big(re^{j\omega}\big)^{-n}=\sum_n\big(x[n]r^{-n}\big)e^{-j\omega n}=\mathcal F\{x[n]r^{-n}\}.
+X(re^{j\omega})=\sum_nx[n]\,\big(re^{j\omega}\big)^{-n}=\sum_n\big(x[n]\,r^{-n}\big)\,e^{-j\omega n}
 $$
 
-**2. Invert the DTFT.**
+That is the DTFT of the signal $x[n]\,r^{-n}$:
 
 $$
-x[n]r^{-n}=\frac1{2\pi}\int_{2\pi}X(re^{j\omega})e^{j\omega n}d\omega\ \Rightarrow\ x[n]=\frac1{2\pi}\int_{2\pi}X(re^{j\omega})\big(re^{j\omega}\big)^nd\omega .
+X(re^{j\omega})=\mathcal F\big\{x[n]\,r^{-n}\big\}
 $$
 
-**3. Change variables to $z$.** With $z=re^{j\omega}$ ($r$ fixed), $dz=jre^{j\omega}d\omega=jz\,d\omega$, so $d\omega=\frac{dz}{jz}$. As $\omega$ runs over $2\pi$, $z$ goes once round the circle $|z|=r$ counter-clockwise:
+**Step 2: invert the DTFT.**
+
+$$
+x[n]\,r^{-n}=\frac1{2\pi}\int_{2\pi}X(re^{j\omega})\,e^{j\omega n}\,d\omega
+$$
+
+Multiply both sides by $r^n$:
+
+$$
+x[n]=\frac1{2\pi}\int_{2\pi}X(re^{j\omega})\,\big(re^{j\omega}\big)^n\,d\omega
+$$
+
+**Step 3: change the variable to $z$.** Keep $r$ fixed and let $z=re^{j\omega}$:
+
+$$
+dz=jre^{j\omega}\,d\omega=jz\,d\omega
+$$
+
+So
+
+$$
+d\omega=\frac{dz}{jz}
+$$
+
+As $\omega$ goes once around $2\pi$, $z$ goes once around the circle $|z|=r$, anticlockwise.
+` + fig("q-contour") + r`
+**Step 4: substitute.** $\big(re^{j\omega}\big)^n=z^n$, and $\frac{z^n}{jz}=\frac{z^{n-1}}{j}$:
 
 $$
 \boxed{x[n]=\frac{1}{2\pi j}\oint_C X(z)\,z^{\,n-1}\,dz}
 $$
 
-Here $C$ is any counter-clockwise closed contour **inside the ROC** encircling the origin. In practice the integral is evaluated by the residue theorem: $x[n]=\sum$ residues of $X(z)z^{n-1}$ at the poles inside $C$. (This is the discrete counterpart of the Bromwich integral for the inverse Laplace transform.)`,
+- $C$ is any anticlockwise closed path **inside the ROC** that goes around the origin.
+- In practice the integral is worked out with residues: $x[n]=$ the sum of the residues of $X(z)\,z^{n-1}$ at the poles inside $C$.
+- This is the discrete-time partner of the Bromwich integral for the inverse Laplace transform.`,
   },
   {
     id: "219-2223-3c",
