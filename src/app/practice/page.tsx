@@ -1,4 +1,6 @@
 import type { Metadata } from "next"
+import Link from "next/link"
+import { ArrowRight } from "lucide-react"
 import { CourseMap } from "@/components/course-map"
 import { questions } from "@/content/questions"
 
@@ -20,6 +22,13 @@ export default function PracticeIndex() {
             </p>
             <p>Pick a topic, try each question on paper, then reveal the solution.</p>
           </div>
+          <Link
+            href="/papers"
+            className="group mt-6 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline hover:underline-offset-4"
+          >
+            Or sit a whole paper
+            <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+          </Link>
         </div>
         <CourseMap mode="practice" />
       </div>

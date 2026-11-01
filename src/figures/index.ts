@@ -16,6 +16,7 @@ import { bookFigures } from "./book"
 import { convCaseFigures } from "./conv-cases"
 import { sheetAnikFigures } from "./sheets/anik"
 import { sheetAshrafFigures } from "./sheets/ashraf"
+import { paper22Figures } from "./papers/cse219-22"
 
 export const figures: FigureMap = {
   ...signalsFigures,
@@ -35,4 +36,5 @@ export const figures: FigureMap = {
   ...convCaseFigures,
   ...sheetAnikFigures,
   ...sheetAshrafFigures,
+  ...paper22Figures,
 }

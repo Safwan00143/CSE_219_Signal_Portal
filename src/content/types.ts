@@ -75,6 +75,39 @@ export type SheetProblem = {
   solutionFigs?: string[]
 }
 
+/** One lettered part of a question on a full past paper. */
+export type PaperPart = {
+  /** "a", "b", … as printed. */
+  part: string
+  marks: number
+  topic: TopicSlug
+  /** The part's own text, without the question's shared stem. Figures go inline as ```fig blocks. */
+  prompt: string
+  solution: string
+}
+
+export type PaperQuestion = {
+  no: number
+  /** Text shared by every part, printed once above them. */
+  stem?: string
+  parts: PaperPart[]
+}
+
+/** A whole term-final paper, kept in its printed order. */
+export type Paper = {
+  slug: string
+  /** Short name, e.g. "22 batch". */
+  name: string
+  course: "CSE 219"
+  session: string
+  /** Header lines as printed on the paper. */
+  exam: string
+  date: string
+  fullMarks: number
+  time: string
+  sections: { name: string; instructions: string; questions: PaperQuestion[] }[]
+}
+
 export type Topic = {
   slug: TopicSlug
   title: string

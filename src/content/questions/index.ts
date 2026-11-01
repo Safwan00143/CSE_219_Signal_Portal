@@ -5,6 +5,7 @@ import { systemsQuestions } from "./part-a-systems"
 import { partBQuestions } from "./part-b"
 import { extraQuestions } from "./extra"
 import { figureMap } from "./figure-map"
+import { paperQuestions } from "../papers"
 
 export const questions: Question[] = [
   ...basicsQuestions,
@@ -12,6 +13,7 @@ export const questions: Question[] = [
   ...systemsQuestions,
   ...partBQuestions,
   ...extraQuestions,
+  ...paperQuestions,
 ].map((q) => ({ ...q, ...figureMap[q.id] }))
 
 /** CSE 219 first, then newest session first, then by question label. */

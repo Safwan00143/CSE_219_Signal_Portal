@@ -23,7 +23,7 @@ export type PracticeItem = {
 
 const solutionCache = new Map<string, Promise<string>>()
 
-function loadSolution(url: string) {
+export function loadSolution(url: string) {
   let p = solutionCache.get(url)
   if (!p) {
     // Revalidate so an edited solution never shows a stale copy; unchanged pages come back as a quick 304.

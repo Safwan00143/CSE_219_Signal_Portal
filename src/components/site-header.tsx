@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 const nav = [
   { href: "/learn", label: "Learn" },
   { href: "/practice", label: "Practice" },
+  { href: "/papers", label: "Papers" },
 ]
 
 export function Wordmark() {
